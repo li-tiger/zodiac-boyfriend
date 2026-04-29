@@ -1,13 +1,20 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { getCharacterImage } from "@/constants/images-game";
 import { useRouter } from "next/navigation";
-import Image from "next/image";
 import { motion } from "framer-motion";
 import ScrollExpandMedia from "@/components/ui/scroll-expansion-hero";
 import { useAuth } from "@/contexts/AuthContext";
 import StarryBackground from "@/components/StarryBackground";
+
+const HERO_IMAGES = [
+  { src: "/images/characters/img1.png", name: "img1" },
+  { src: "/images/characters/img2.png", name: "img2" },
+  { src: "/images/characters/img3.png", name: "img3" },
+  { src: "/images/characters/img4.png", name: "img4" },
+];
+
+const BG_IMAGE = "/images/characters/img.png";
 
 const ZODIAC_BOYFRIENDS = [
   { name: "烈炎", sign: "aries", emoji: "♈", color: "#FF6B6B" },
@@ -38,7 +45,7 @@ export default function WelcomePage() {
 
   useEffect(() => {
     const interval = setInterval(() => {
-      setSelectedIndex((prev) => (prev + 1) % ZODIAC_BOYFRIENDS.length);
+      setSelectedIndex((prev) => (prev + 1) % HERO_IMAGES.length);
     }, 3000);
     return () => clearInterval(interval);
   }, []);
@@ -47,7 +54,7 @@ export default function WelcomePage() {
     router.push("/select");
   };
 
-  const currentBoyfriend = ZODIAC_BOYFRIENDS[selectedIndex];
+  const currentImage = HERO_IMAGES[selectedIndex];
 
   if (loading || !user) {
     return (
@@ -68,10 +75,10 @@ export default function WelcomePage() {
 
       <ScrollExpandMedia
         mediaType="image"
-        mediaSrc={getCharacterImage(currentBoyfriend.sign as any)}
-        bgImageSrc="https://images.unsplash.com/photo-1519681393784-d120267933ba?q=80&w=1920&auto=format&fit=crop"
+        mediaSrc={currentImage.src}
+        bgImageSrc={BG_IMAGE}
         title="心动宇宙"
-        date={`${currentBoyfriend.emoji} ${currentBoyfriend.name}`}
+        date={currentImage.name}
         scrollToExpand="向下滚动开始探索 ✦"
         textBlend
         onExpandComplete={() => setShowContent(true)}

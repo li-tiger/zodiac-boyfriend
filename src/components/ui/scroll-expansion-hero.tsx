@@ -195,7 +195,7 @@ const ScrollExpandMedia = ({
               className='w-screen h-screen'
               style={{
                 objectFit: 'cover',
-                objectPosition: 'center',
+                objectPosition: 'top center',
               }}
               priority
             />
