@@ -6,6 +6,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { motion, AnimatePresence } from "framer-motion";
 import { BOYFRIENDS, RELATION_STAGE_LABELS, type ZodiacSign, type RelationStage } from "@/constants";
 import StarryBackground from "@/components/StarryBackground";
+import { getCharacterImage } from "@/constants/images-game";
 
 interface Message {
   id: string;
@@ -285,9 +286,8 @@ function ChatContent() {
         </motion.button>
 
         <motion.div
-          className="w-10 h-10 rounded-full flex items-center justify-center"
+          className="w-10 h-10 rounded-full overflow-hidden"
           style={{
-            background: "var(--bg-card)",
             boxShadow: "0 0 15px var(--glow-rose)"
           }}
           animate={{
@@ -295,7 +295,11 @@ function ChatContent() {
           }}
           transition={{ duration: 2, repeat: Infinity }}
         >
-          <span className="text-lg">{boyfriend.emoji}</span>
+          <img
+            src={getCharacterImage(sign!)}
+            alt={boyfriend.name}
+            className="w-full h-full object-cover"
+          />
         </motion.div>
 
         <div className="flex-1">
@@ -343,11 +347,16 @@ function ChatContent() {
             className="text-center py-10"
           >
             <motion.div
-              className="text-5xl mb-4"
-              animate={{ scale: [1, 1.1, 1], rotate: [0, 5, -5, 0] }}
+              className="w-20 h-20 rounded-full overflow-hidden mb-4 mx-auto"
+              style={{ boxShadow: "0 0 20px var(--glow-rose)" }}
+              animate={{ scale: [1, 1.05, 1] }}
               transition={{ duration: 3, repeat: Infinity }}
             >
-              {boyfriend.emoji}
+              <img
+                src={getCharacterImage(sign!)}
+                alt={boyfriend.name}
+                className="w-full h-full object-cover"
+              />
             </motion.div>
             <p className="text-base mb-2" style={{ color: "var(--text-primary)" }}>
               和{boyfriend.name}打个招呼吧
@@ -394,15 +403,16 @@ function ChatContent() {
               <motion.div
                 initial={{ scale: 0 }}
                 animate={{ scale: 1 }}
-                className="w-8 h-8 rounded-full flex items-center justify-center mr-2 mb-1.5 shrink-0"
+                className="w-8 h-8 rounded-full overflow-hidden mr-2 mb-1.5 shrink-0"
                 style={{
-                  background: "var(--bg-card)",
                   boxShadow: "0 0 10px var(--glow-silver)"
                 }}
               >
-                <span style={{ color: "var(--accent-rose)" }} className="text-xs font-bold">
-                  {boyfriend.name.charAt(0)}
-                </span>
+                <img
+                  src={getCharacterImage(sign!)}
+                  alt={boyfriend.name}
+                  className="w-full h-full object-cover"
+                />
               </motion.div>
             )}
 
@@ -478,12 +488,14 @@ function ChatContent() {
             className="flex justify-start"
           >
             <div
-              className="w-8 h-8 rounded-full flex items-center justify-center mr-2"
-              style={{ background: "var(--bg-card)", boxShadow: "0 0 10px var(--glow-silver)" }}
+              className="w-8 h-8 rounded-full overflow-hidden mr-2"
+              style={{ boxShadow: "0 0 10px var(--glow-silver)" }}
             >
-              <span style={{ color: "var(--accent-rose)" }} className="text-xs font-bold">
-                {boyfriend.name.charAt(0)}
-              </span>
+              <img
+                src={getCharacterImage(sign!)}
+                alt={boyfriend.name}
+                className="w-full h-full object-cover"
+              />
             </div>
             <div
               className="flex gap-1.5 px-4 py-3 rounded-2xl rounded-bl-md"

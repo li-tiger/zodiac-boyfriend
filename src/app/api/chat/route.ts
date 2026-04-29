@@ -267,23 +267,49 @@ export async function POST(request: Request) {
       });
     }
 
+    // 检查是否需要生成图片
     const matchedImage = matchImageMessage(message);
     const matchedScene = matchSceneFromMessage(message);
-
+    
     let imageUrl: string | null = null;
     let imageGenerating = false;
 
-    if (matchedScene) {
+    // 如果匹配到场景或图片请求，让LLM生成场景描述，然后调用火山引擎
+    if (matchedScene || matchedImage) {
       try {
-        const generatedImage = await generateSceneImage(zodiac_sign as ZodiacSign, matchedScene);
+        // 让LLM根据对话内容生成场景描述
+        const scenePromptSystem = `你是一个场景描述专家。根据用户的消息和当前对话上下文，生成一个适合AI绘画的英文场景描述。
+
+要求：
+1. 描述要具体、生动，包含环境、光线、氛围、动作等细节
+2. 要符合"${bf.name}"这个${bf.personality}性格的人物形象
+3. 场景应该回应用户的请求："${message}"
+4. 只返回场景描述文本，不要任何解释
+5. 描述长度控制在50-100个单词
+
+示例输出：
+A handsome young man with gentle eyes sitting by the window at sunset, soft golden light illuminating his face, wearing a cozy sweater, holding a cup of coffee, warm and peaceful atmosphere, photorealistic style`;
+
+        const sceneDescription = await deepseek.chat([
+          { role: "system", content: scenePromptSystem },
+          { role: "user", content: `User message: "${message}"\n\nGenerate a scene description for image generation:` },
+        ]);
+
+        // 调用火山引擎生成图片
+        const generatedImage = await generateSceneImage(
+          zodiac_sign as ZodiacSign, 
+          {
+            scene: matchedScene?.scene || matchedImage?.scene || "default",
+            prompt_template: sceneDescription,
+            keywords: matchedScene?.keywords || matchedImage?.keywords || []
+          }
+        );
         imageUrl = generatedImage.url;
       } catch (error) {
-        console.error("Image generation failed, using fallback:", error);
-        const fallback = matchedImage || getRandomFallbackImage();
-        imageUrl = fallback.imageUrl;
+        console.error("Image generation failed:", error);
+        // 失败时不返回图片
+        imageUrl = null;
       }
-    } else if (matchedImage) {
-      imageUrl = matchedImage.imageUrl;
     }
 
     const response: ChatResponse = {

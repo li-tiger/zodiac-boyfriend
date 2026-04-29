@@ -241,89 +241,73 @@ export default function SelectPage() {
                   </motion.div>
                 )}
 
-                <motion.div
-                  className="w-14 h-14 mx-auto rounded-full mb-2 overflow-hidden"
-                  style={{
-                    background: "var(--bg-primary)",
-                    boxShadow: isSelected
-                      ? "0 0 20px var(--glow-rose)"
-                      : "0 0 10px var(--glow-silver)"
-                  }}
-                  animate={{
-                    boxShadow: isSelected
-                      ? ["0 0 15px var(--glow-rose)", "0 0 25px var(--glow-rose)", "0 0 15px var(--glow-rose)"]
-                      : isHovered
-                      ? ["0 0 8px var(--glow-silver)", "0 0 15px var(--glow-silver)", "0 0 8px var(--glow-silver)"]
-                      : "0 0 10px var(--glow-silver)"
-                  }}
-                  transition={{ duration: 2, repeat: Infinity }}
-                >
+                {/* 图片区域 - 填满整个上部 */}
+                <div className="relative w-full aspect-[3/4] mb-2 overflow-hidden rounded-xl">
                   <img
                     src={getCharacterImage(sign)}
                     alt={bf.name}
                     className="w-full h-full object-cover"
                     style={{
-                      opacity: isSelected || isHovered ? 1 : 0.75,
-                      filter: isSelected ? "drop-shadow(0 0 8px var(--accent-rose))" : "none"
+                      opacity: isSelected || isHovered ? 1 : 0.85,
                     }}
                   />
-                </motion.div>
-
-                <div className="flex items-center justify-center gap-1 mb-1">
-                  <span className="text-base">{getZodiacEmoji(sign)}</span>
-                  <p className="text-xs font-medium" style={{ color: "var(--text-primary)" }}>
-                    {ZODIAC_NAMES[sign]}
-                  </p>
+                  {/* 选中标记 */}
+                  {isSelected && (
+                    <motion.div
+                      initial={{ scale: 0 }}
+                      animate={{ scale: 1 }}
+                      className="absolute top-2 right-2 w-6 h-6 rounded-full flex items-center justify-center text-xs"
+                      style={{
+                        background: "var(--gradient-pink)",
+                        color: "white",
+                        boxShadow: "0 0 10px var(--glow-pink)"
+                      }}
+                    >
+                      ✦
+                    </motion.div>
+                  )}
+                  {/* 关系阶段标签 */}
+                  {hasProgress && !isLover && (
+                    <div
+                      className="absolute bottom-2 left-2 text-[9px] px-2 py-1 rounded-full whitespace-nowrap"
+                      style={{
+                        background: "rgba(0,0,0,0.6)",
+                        color: "var(--accent-gold)",
+                        backdropFilter: "blur(4px)"
+                      }}
+                    >
+                      {RELATION_STAGE_LABELS[progress.stage]}
+                    </div>
+                  )}
+                  {/* 恋人标记 */}
+                  {isLover && (
+                    <motion.div
+                      initial={{ scale: 0 }}
+                      animate={{ scale: 1 }}
+                      className="absolute bottom-2 left-2 text-[9px] px-2 py-1 rounded-full whitespace-nowrap"
+                      style={{
+                        background: "rgba(236, 72, 153, 0.8)",
+                        color: "white",
+                        backdropFilter: "blur(4px)"
+                      }}
+                    >
+                      💕 恋人
+                    </motion.div>
+                  )}
                 </div>
 
-                <p className="text-[10px] text-center truncate" style={{ color: "var(--text-secondary)" }}>
-                  {bf.name}
-                </p>
-
-                {isLover && (
-                  <motion.div
-                    initial={{ scale: 0 }}
-                    animate={{ scale: 1 }}
-                    className="absolute -top-1 -right-1 w-5 h-5 rounded-full flex items-center justify-center text-xs"
-                    style={{
-                      background: "var(--gradient-pink)",
-                      color: "white",
-                      boxShadow: "0 0 10px var(--glow-pink)"
-                    }}
-                  >
-                    💕
-                  </motion.div>
-                )}
-
-                {hasProgress && !isLover && (
-                  <div
-                    className="absolute bottom-1 left-1/2 -translate-x-1/2 text-[8px] px-1.5 py-0.5 rounded-full whitespace-nowrap"
-                    style={{
-                      background: "var(--accent-gold)",
-                      color: "var(--bg-primary)",
-                      boxShadow: "0 0 8px rgba(212, 165, 116, 0.5)"
-                    }}
-                  >
-                    {RELATION_STAGE_LABELS[progress.stage]}
+                {/* 文字区域 */}
+                <div className="text-center">
+                  <div className="flex items-center justify-center gap-1 mb-0.5">
+                    <span className="text-sm">{getZodiacEmoji(sign)}</span>
+                    <p className="text-xs font-medium" style={{ color: "var(--text-primary)" }}>
+                      {ZODIAC_NAMES[sign]}
+                    </p>
                   </div>
-                )}
-
-                {hasProgress && (
-                  <div
-                    className="absolute bottom-0 left-0 right-0 h-0.5 rounded-b-2xl overflow-hidden"
-                    style={{ background: "var(--bg-primary)" }}
-                  >
-                    <motion.div
-                      className="h-full"
-                      style={{
-                        background: isLover ? "var(--gradient-pink)" : "var(--gradient-gold)"
-                      }}
-                      initial={{ width: 0 }}
-                      animate={{ width: `${progress.progress_value}%` }}
-                      transition={{ duration: 0.8, delay: 0.5 }}
-                    />
-                  </div>
-                )}
+                  <p className="text-[11px] font-medium truncate" style={{ color: "var(--text-secondary)" }}>
+                    {bf.name}
+                  </p>
+                </div>
               </motion.button>
             );
           })}
