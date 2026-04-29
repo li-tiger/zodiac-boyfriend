@@ -14,6 +14,8 @@ interface Message {
   content: string;
   created_at: string;
   imageUrl?: string;
+  imageStatus?: "generating" | "completed" | "failed";
+  imageTaskId?: string;
 }
 
 interface DailyTopicInfo {
@@ -29,6 +31,8 @@ interface ChatResponse {
   imageTrigger?: { id: number; imageUrl: string } | null;
   occupationUnlocked?: boolean;
   callName?: string;
+  imageGenerating?: boolean;
+  imageTaskId?: string | null;
 }
 
 const messageVariants = {
@@ -69,6 +73,7 @@ function ChatContent() {
   const [showOccupationUnlock, setShowOccupationUnlock] = useState(false);
   const [unlockedOccupation, setUnlockedOccupation] = useState("");
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const pollingRefs = useRef<Map<string, NodeJS.Timeout>>(new Map());
 
   const boyfriend = sign ? BOYFRIENDS[sign] : null;
 
@@ -146,6 +151,67 @@ function ChatContent() {
     }
   }, [showOccupationUnlock]);
 
+  // 图片生成轮询
+  const startImagePolling = useCallback((messageId: string, taskId: string) => {
+    if (pollingRefs.current.has(taskId)) return;
+
+    const poll = async () => {
+      try {
+        const res = await fetch(`/api/image/status/${taskId}`);
+        if (!res.ok) throw new Error("查询失败");
+
+        const data = await res.json();
+
+        if (data.status === "completed") {
+          // 图片生成完成，更新消息
+          setMessages((prev) =>
+            prev.map((msg) =>
+              msg.id === messageId
+                ? { ...msg, imageUrl: data.imageUrl, imageStatus: "completed" }
+                : msg
+            )
+          );
+          // 停止轮询
+          const timeout = pollingRefs.current.get(taskId);
+          if (timeout) clearTimeout(timeout);
+          pollingRefs.current.delete(taskId);
+        } else if (data.status === "failed") {
+          // 图片生成失败
+          setMessages((prev) =>
+            prev.map((msg) =>
+              msg.id === messageId
+                ? { ...msg, imageStatus: "failed" }
+                : msg
+            )
+          );
+          // 停止轮询
+          const timeout = pollingRefs.current.get(taskId);
+          if (timeout) clearTimeout(timeout);
+          pollingRefs.current.delete(taskId);
+        } else {
+          // 继续轮询，每2秒一次
+          const timeout = setTimeout(poll, 2000);
+          pollingRefs.current.set(taskId, timeout);
+        }
+      } catch {
+        // 出错后继续轮询
+        const timeout = setTimeout(poll, 2000);
+        pollingRefs.current.set(taskId, timeout);
+      }
+    };
+
+    // 开始轮询
+    poll();
+  }, []);
+
+  // 清理轮询
+  useEffect(() => {
+    return () => {
+      pollingRefs.current.forEach((timeout) => clearTimeout(timeout));
+      pollingRefs.current.clear();
+    };
+  }, []);
+
   const handleSend = async () => {
     if (!input.trim() || isSending || !user || !sign) return;
 
@@ -177,8 +243,15 @@ function ChatContent() {
           const assistantMessage: Message = {
             ...data.message,
             imageUrl: data.imageTrigger?.imageUrl,
+            imageStatus: data.imageGenerating ? "generating" : undefined,
+            imageTaskId: data.imageTaskId || undefined,
           };
           setMessages((prev) => [...prev, assistantMessage]);
+
+          // 如果有图片生成任务，开始轮询
+          if (data.imageTaskId && data.imageGenerating) {
+            startImagePolling(data.message.id, data.imageTaskId);
+          }
         }
 
         if (data.stage) {
@@ -416,6 +489,31 @@ function ChatContent() {
               </motion.div>
             )}
 
+            {/* 图片显示区域 */}
+            {msg.imageStatus === "generating" && (
+              <motion.div
+                initial={{ opacity: 0, scale: 0.8 }}
+                animate={{ opacity: 1, scale: 1 }}
+                className="max-w-[65%] mb-2 rounded-xl overflow-hidden px-4 py-3"
+                style={{
+                  background: "var(--bg-card)",
+                  border: "1px solid var(--border-cosmic)",
+                  boxShadow: "0 4px 20px rgba(0, 0, 0, 0.3)"
+                }}
+              >
+                <div className="flex items-center gap-2">
+                  <motion.div
+                    className="w-4 h-4 rounded-full"
+                    style={{ background: "var(--accent-rose)" }}
+                    animate={{ scale: [1, 1.2, 1], opacity: [0.5, 1, 0.5] }}
+                    transition={{ duration: 1, repeat: Infinity }}
+                  />
+                  <span className="text-xs" style={{ color: "var(--text-secondary)" }}>
+                    图片正在发送中...
+                  </span>
+                </div>
+              </motion.div>
+            )}
             {msg.imageUrl && (
               <motion.div
                 initial={{ opacity: 0, scale: 0.8 }}

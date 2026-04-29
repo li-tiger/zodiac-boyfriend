@@ -3,7 +3,8 @@ import { createClient } from "@/lib/db";
 import { BOYFRIENDS, type ZodiacSign, type RelationStage } from "@/constants";
 import { createDeepSeekClient, buildBoyfriendSystemPrompt } from "@/lib/deepseek";
 import { matchDailyTopic, matchImageMessage, getRandomFallbackImage, type DailyTopic } from "@/constants/daily-topics";
-import { matchSceneFromMessage, generateSceneImage } from "@/lib/volcano-image";
+import { matchSceneFromMessage } from "@/lib/volcano-image";
+import { createImageTask, generateImageAsync } from "@/lib/image-generation";
 
 interface ChatResponse {
   message: unknown;
@@ -14,6 +15,7 @@ interface ChatResponse {
   occupationUnlocked?: boolean;
   callName?: string;
   imageGenerating?: boolean;
+  imageTaskId?: string | null;
 }
 
 export async function GET(request: Request) {
@@ -270,13 +272,17 @@ export async function POST(request: Request) {
     // 检查是否需要生成图片
     const matchedImage = matchImageMessage(message);
     const matchedScene = matchSceneFromMessage(message);
-    
-    let imageUrl: string | null = null;
+
+    let imageTaskId: string | null = null;
     let imageGenerating = false;
 
-    // 如果匹配到场景或图片请求，让LLM生成场景描述，然后调用火山引擎
+    // 如果匹配到场景或图片请求，异步生成图片
     if (matchedScene || matchedImage) {
       try {
+        // 创建图片生成任务
+        imageTaskId = createImageTask();
+        imageGenerating = true;
+
         // 让LLM根据对话内容生成场景描述
         const scenePromptSystem = `你是一个场景描述专家。根据用户的消息和当前对话上下文，生成一个适合AI绘画的英文场景描述。
 
@@ -295,20 +301,21 @@ A handsome young man with gentle eyes sitting by the window at sunset, soft gold
           { role: "user", content: `User message: "${message}"\n\nGenerate a scene description for image generation:` },
         ]);
 
-        // 调用火山引擎生成图片
-        const generatedImage = await generateSceneImage(
-          zodiac_sign as ZodiacSign, 
+        // 异步生成图片，不阻塞响应
+        generateImageAsync(
+          imageTaskId,
+          zodiac_sign as ZodiacSign,
           {
             scene: matchedScene?.scene || matchedImage?.scene || "default",
             prompt_template: sceneDescription,
             keywords: matchedScene?.keywords || matchedImage?.keywords || []
-          }
+          },
+          sceneDescription
         );
-        imageUrl = generatedImage.url;
       } catch (error) {
-        console.error("Image generation failed:", error);
-        // 失败时不返回图片
-        imageUrl = null;
+        console.error("Image generation setup failed:", error);
+        imageTaskId = null;
+        imageGenerating = false;
       }
     }
 
@@ -317,10 +324,11 @@ A handsome young man with gentle eyes sitting by the window at sunset, soft gold
       stage: newStage || currentStage,
       progress_value: newProgress,
       dailyTopic: dailyTopicTriggered,
-      imageTrigger: imageUrl ? { id: matchedImage?.id || 0, imageUrl } : null,
+      imageTrigger: null, // 异步生成，初始不返回图片
       occupationUnlocked: newOccupationUnlocked && !occupationUnlocked,
       callName: getCallNameForStage(bf.callNames, newStage || currentStage),
       imageGenerating,
+      imageTaskId,
     };
 
     return NextResponse.json(response);
