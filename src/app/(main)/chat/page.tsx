@@ -3,8 +3,9 @@
 import React, { useState, useEffect, useRef, useCallback, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useAuth } from "@/contexts/AuthContext";
+import { motion, AnimatePresence } from "framer-motion";
 import { BOYFRIENDS, RELATION_STAGE_LABELS, type ZodiacSign, type RelationStage } from "@/constants";
-import { StarField, AuroraBackground } from "@/components/BackgroundEffects";
+import StarryBackground from "@/components/StarryBackground";
 
 interface Message {
   id: string;
@@ -28,6 +29,27 @@ interface ChatResponse {
   occupationUnlocked?: boolean;
   callName?: string;
 }
+
+const messageVariants = {
+  hidden: { opacity: 0, y: 20, scale: 0.9 },
+  visible: {
+    opacity: 1,
+    y: 0,
+    scale: 1,
+    transition: { type: "spring" as const, stiffness: 300, damping: 25 }
+  }
+};
+
+const notificationVariants = {
+  hidden: { opacity: 0, y: -20, scale: 0.8 },
+  visible: {
+    opacity: 1,
+    y: 0,
+    scale: 1,
+    transition: { type: "spring" as const, stiffness: 300, damping: 25 }
+  },
+  exit: { opacity: 0, y: -20, scale: 0.8, transition: { duration: 0.2 } }
+};
 
 function ChatContent() {
   const { user, loading: authLoading } = useAuth();
@@ -189,50 +211,104 @@ function ChatContent() {
     return null;
   }
 
+  const greetingSuggestions = ["你好呀", "嗨", "在吗", "最近怎么样"];
+
   return (
-    <div className="flex flex-col h-screen">
-      {showTopicTip && (
-        <div
-          className="absolute top-16 left-1/2 -translate-x-1/2 z-50 px-4 py-2 rounded-full text-xs font-medium animate-pulse"
-          style={{ background: "var(--gradient-gold)", color: "var(--bg-primary)" }}
-        >
-          💬 {topicTip}
-        </div>
-      )}
+    <div className="flex flex-col h-screen relative">
+      <AnimatePresence>
+        {showTopicTip && (
+          <motion.div
+            variants={notificationVariants}
+            initial="hidden"
+            animate="visible"
+            exit="exit"
+            className="absolute top-16 left-1/2 -translate-x-1/2 z-50 px-5 py-2.5 rounded-full text-xs font-medium"
+            style={{
+              background: "var(--gradient-gold)",
+              color: "var(--bg-primary)",
+              boxShadow: "0 4px 20px rgba(212, 165, 116, 0.4)"
+            }}
+          >
+            💬 {topicTip}
+          </motion.div>
+        )}
+      </AnimatePresence>
 
-      {showOccupationUnlock && (
-        <div
-          className="absolute top-20 left-1/2 -translate-x-1/2 z-50 px-4 py-3 rounded-xl text-xs text-center animate-bounce"
-          style={{ background: "var(--bg-card)", border: "2px solid var(--accent-gold)", color: "var(--text-primary)" }}
-        >
-          <div className="text-sm mb-1">🎉 职业解锁</div>
-          <div className="font-medium" style={{ color: "var(--accent-pink)" }}>
-            {boyfriend.name}的职业是{unlockedOccupation}！
-          </div>
-        </div>
-      )}
+      <AnimatePresence>
+        {showOccupationUnlock && (
+          <motion.div
+            variants={notificationVariants}
+            initial="hidden"
+            animate="visible"
+            exit="exit"
+            className="absolute top-20 left-1/2 -translate-x-1/2 z-50 px-5 py-3 rounded-xl text-xs text-center"
+            style={{
+              background: "var(--bg-card)",
+              border: "2px solid var(--accent-gold)",
+              boxShadow: "0 8px 32px rgba(212, 165, 116, 0.3)"
+            }}
+          >
+            <motion.div
+              className="text-base mb-1"
+              animate={{ scale: [1, 1.1, 1] }}
+              transition={{ duration: 1, repeat: Infinity }}
+            >
+              🎉 职业解锁
+            </motion.div>
+            <div className="font-medium" style={{ color: "var(--accent-rose)" }}>
+              {boyfriend.name}的职业是{unlockedOccupation}！
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
-      <header
+      <motion.header
+        initial={{ y: -50, opacity: 0 }}
+        animate={{ y: 0, opacity: 1 }}
+        transition={{ type: "spring", stiffness: 200, damping: 25 }}
         className="px-4 py-3 flex items-center gap-3 border-b"
-        style={{ background: "rgba(5,10,18,0.9)", borderColor: "var(--border-light)" }}
+        style={{
+          background: "rgba(10, 10, 26, 0.85)",
+          borderColor: "var(--border-cosmic)",
+          backdropFilter: "blur(20px)",
+          boxShadow: "0 4px 30px rgba(0, 0, 0, 0.3)"
+        }}
       >
-        <button
+        <motion.button
           onClick={() => router.push("/select")}
+          whileHover={{ scale: 1.1 }}
+          whileTap={{ scale: 0.95 }}
           className="p-2 rounded-full transition-colors"
           style={{ background: "var(--bg-card)" }}
         >
           <span style={{ color: "var(--text-primary)" }}>←</span>
-        </button>
+        </motion.button>
 
-        <div className="w-10 h-10 rounded-full glow-border flex items-center justify-center" style={{ background: "var(--bg-card)" }}>
+        <motion.div
+          className="w-10 h-10 rounded-full flex items-center justify-center"
+          style={{
+            background: "var(--bg-card)",
+            boxShadow: "0 0 15px var(--glow-rose)"
+          }}
+          animate={{
+            boxShadow: ["0 0 10px var(--glow-rose)", "0 0 20px var(--glow-rose)", "0 0 10px var(--glow-rose)"]
+          }}
+          transition={{ duration: 2, repeat: Infinity }}
+        >
           <span className="text-lg">{boyfriend.emoji}</span>
-        </div>
+        </motion.div>
 
         <div className="flex-1">
-          <h1 className="text-sm font-bold" style={{ color: "var(--text-primary)" }}>
-            {boyfriend.name}
-          </h1>
-          <p className="text-[10px]" style={{ color: "var(--text-secondary)" }}>
+          <motion.h1
+            className="text-sm font-bold"
+            style={{ color: "var(--text-primary)" }}
+            key={currentCallName}
+            initial={{ opacity: 0, x: -10 }}
+            animate={{ opacity: 1, x: 0 }}
+          >
+            {currentCallName || boyfriend.name}
+          </motion.h1>
+          <p className="text-[10px]" style={{ color: "var(--accent-rose)" }}>
             {RELATION_STAGE_LABELS[stage]}
           </p>
         </div>
@@ -240,63 +316,106 @@ function ChatContent() {
         <div className="flex items-center gap-2">
           <div
             className="w-20 h-1.5 rounded-full overflow-hidden"
-            style={{ background: "var(--bg-card)" }}
+            style={{ background: "var(--bg-primary)" }}
           >
-            <div
-              className="h-full rounded-full transition-all duration-500"
-              style={{ width: `${progressValue}%`, background: "var(--gradient-pink)", boxShadow: "0 0 8px var(--glow-pink)" }}
+            <motion.div
+              className="h-full rounded-full"
+              style={{
+                background: stage === "lover" ? "var(--gradient-pink)" : "var(--gradient-gold)",
+                boxShadow: stage === "lover" ? "0 0 10px var(--glow-pink)" : "0 0 8px var(--glow-gold)"
+              }}
+              initial={{ width: 0 }}
+              animate={{ width: `${progressValue}%` }}
+              transition={{ duration: 0.5 }}
             />
           </div>
+          <span className="text-[10px] font-medium" style={{ color: "var(--text-secondary)" }}>
+            {progressValue}%
+          </span>
         </div>
-      </header>
+      </motion.header>
 
-      <div className="flex-1 overflow-y-auto px-4 py-4 space-y-3">
+      <div className="flex-1 overflow-y-auto px-4 py-4 space-y-4">
         {messages.length === 0 && (
-          <div className="text-center py-8">
-            <div className="text-4xl mb-3">{boyfriend.emoji}</div>
-            <p className="text-sm" style={{ color: "var(--text-secondary)" }}>
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="text-center py-10"
+          >
+            <motion.div
+              className="text-5xl mb-4"
+              animate={{ scale: [1, 1.1, 1], rotate: [0, 5, -5, 0] }}
+              transition={{ duration: 3, repeat: Infinity }}
+            >
+              {boyfriend.emoji}
+            </motion.div>
+            <p className="text-base mb-2" style={{ color: "var(--text-primary)" }}>
               和{boyfriend.name}打个招呼吧
             </p>
-            <p className="text-xs mt-1" style={{ color: "var(--text-muted)" }}>
+            <p className="text-xs mb-4" style={{ color: "var(--text-secondary)" }}>
               {boyfriend.personality}
             </p>
-            <div className="mt-4 flex justify-center gap-2 flex-wrap">
-              {["你好呀", "嗨", "在吗", "最近怎么样"].map((greeting) => (
-                <button
+            <div className="flex justify-center gap-2 flex-wrap">
+              {greetingSuggestions.map((greeting, idx) => (
+                <motion.button
                   key={greeting}
+                  initial={{ opacity: 0, scale: 0.8 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  transition={{ delay: idx * 0.1 }}
+                  whileHover={{ scale: 1.05, y: -2 }}
+                  whileTap={{ scale: 0.95 }}
                   onClick={() => setInput(greeting)}
-                  className="px-3 py-1 rounded-full text-xs transition-all hover:scale-105"
-                  style={{ background: "var(--bg-card)", color: "var(--text-secondary)", border: "1px solid var(--border-light)" }}
+                  className="px-4 py-1.5 rounded-full text-xs transition-all"
+                  style={{
+                    background: "var(--bg-card)",
+                    color: "var(--text-secondary)",
+                    border: "1px solid var(--border-cosmic)",
+                    boxShadow: "0 2px 10px rgba(0, 0, 0, 0.2)"
+                  }}
                 >
                   {greeting}
-                </button>
+                </motion.button>
               ))}
             </div>
-          </div>
+          </motion.div>
         )}
 
-        {messages.map((msg) => (
-          <div
+        {messages.map((msg, index) => (
+          <motion.div
             key={msg.id}
+            variants={messageVariants}
+            initial="hidden"
+            animate="visible"
             className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"} flex-col ${
               msg.role === "user" ? "items-end" : "items-start"
             }`}
           >
             {msg.role === "assistant" && (
-              <div
-                className="w-8 h-8 rounded-full glow-border flex items-center justify-center mr-2 mb-1 shrink-0"
-                style={{ background: "var(--bg-card)" }}
+              <motion.div
+                initial={{ scale: 0 }}
+                animate={{ scale: 1 }}
+                className="w-8 h-8 rounded-full flex items-center justify-center mr-2 mb-1.5 shrink-0"
+                style={{
+                  background: "var(--bg-card)",
+                  boxShadow: "0 0 10px var(--glow-silver)"
+                }}
               >
-                <span style={{ color: "var(--accent-pink)" }} className="text-xs font-bold">
+                <span style={{ color: "var(--accent-rose)" }} className="text-xs font-bold">
                   {boyfriend.name.charAt(0)}
                 </span>
-              </div>
+              </motion.div>
             )}
 
             {msg.imageUrl && (
-              <div
-                className="max-w-[60%] mb-2 rounded-xl overflow-hidden"
-                style={{ background: "var(--bg-card)", border: "1px solid var(--border-light)" }}
+              <motion.div
+                initial={{ opacity: 0, scale: 0.8 }}
+                animate={{ opacity: 1, scale: 1 }}
+                className="max-w-[65%] mb-2 rounded-xl overflow-hidden"
+                style={{
+                  background: "var(--bg-card)",
+                  border: "1px solid var(--border-cosmic)",
+                  boxShadow: "0 4px 20px rgba(0, 0, 0, 0.3)"
+                }}
               >
                 <img
                   src={msg.imageUrl}
@@ -304,97 +423,173 @@ function ChatContent() {
                   className="w-full h-auto object-cover"
                   style={{ maxHeight: "200px" }}
                 />
-              </div>
+              </motion.div>
             )}
 
-            <div
+            <motion.div
+              initial={{ scale: 0.9, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              transition={{ type: "spring", stiffness: 300, damping: 25 }}
               className={`max-w-[75%] px-4 py-3 rounded-2xl text-sm leading-relaxed whitespace-pre-wrap ${
                 msg.role === "user"
-                  ? "rounded-br-md text-white"
+                  ? "rounded-br-md"
                   : "rounded-bl-md"
               }`}
               style={
                 msg.role === "user"
-                  ? { background: "var(--gradient-pink)" }
-                  : { background: "var(--bg-card)", border: "1px solid var(--border-light)" }
+                  ? {
+                      background: "var(--gradient-cosmic)",
+                      border: "1px solid var(--accent-rose)",
+                      boxShadow: "0 4px 20px var(--glow-rose)"
+                    }
+                  : {
+                      background: "var(--bg-card)",
+                      border: "1px solid var(--border-cosmic)",
+                      boxShadow: "0 4px 20px rgba(0, 0, 0, 0.2)"
+                    }
               }
             >
               {msg.role === "assistant" && currentCallName && (
-                <span className="mr-1" style={{ color: "var(--accent-pink)" }}>
+                <motion.span
+                  className="mr-1.5 font-medium"
+                  style={{ color: "var(--accent-rose)" }}
+                  key={currentCallName}
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                >
                   {currentCallName}：
-                </span>
+                </motion.span>
               )}
-              {msg.content}
-            </div>
-          </div>
+              <span style={msg.role === "user" ? { color: "var(--text-primary)" } : { color: "var(--text-secondary)" }}>
+                {msg.content}
+              </span>
+            </motion.div>
+
+            <span className="text-[9px] mt-1 px-1" style={{ color: "var(--text-muted)" }}>
+              {new Date(msg.created_at).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
+            </span>
+          </motion.div>
         ))}
 
         {isSending && (
-          <div className="flex justify-start">
+          <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="flex justify-start"
+          >
             <div
-              className="w-8 h-8 rounded-full glow-border flex items-center justify-center mr-2"
-              style={{ background: "var(--bg-card)" }}
+              className="w-8 h-8 rounded-full flex items-center justify-center mr-2"
+              style={{ background: "var(--bg-card)", boxShadow: "0 0 10px var(--glow-silver)" }}
             >
-              <span style={{ color: "var(--accent-pink)" }} className="text-xs font-bold">
+              <span style={{ color: "var(--accent-rose)" }} className="text-xs font-bold">
                 {boyfriend.name.charAt(0)}
               </span>
             </div>
-            <div className="flex gap-1.5 px-4 py-3 rounded-2xl rounded-bl-md" style={{ background: "var(--bg-card)", border: "1px solid var(--border-light)" }}>
-              <div className="w-2 h-2 rounded-full typing-dot" style={{ background: "var(--accent-pink)" }} />
-              <div className="w-2 h-2 rounded-full typing-dot" style={{ background: "var(--accent-pink)" }} />
-              <div className="w-2 h-2 rounded-full typing-dot" style={{ background: "var(--accent-pink)" }} />
+            <div
+              className="flex gap-1.5 px-4 py-3 rounded-2xl rounded-bl-md"
+              style={{
+                background: "var(--bg-card)",
+                border: "1px solid var(--border-cosmic)",
+                boxShadow: "0 4px 20px rgba(0, 0, 0, 0.2)"
+              }}
+            >
+              {[0, 1, 2].map((i) => (
+                <motion.div
+                  key={i}
+                  className="w-2 h-2 rounded-full"
+                  style={{ background: "var(--accent-rose)" }}
+                  animate={{ scale: [1, 1.5, 1], opacity: [0.5, 1, 0.5] }}
+                  transition={{ duration: 1, repeat: Infinity, delay: i * 0.2 }}
+                />
+              ))}
             </div>
-          </div>
+          </motion.div>
         )}
 
         <div ref={messagesEndRef} />
       </div>
 
-      <div
+      <motion.div
+        initial={{ y: 50 }}
+        animate={{ y: 0 }}
+        transition={{ type: "spring", stiffness: 200, damping: 25 }}
         className="px-4 py-3 border-t"
-        style={{ background: "rgba(5,10,18,0.9)", borderColor: "var(--border-light)" }}
+        style={{
+          background: "rgba(10, 10, 26, 0.85)",
+          borderColor: "var(--border-cosmic)",
+          backdropFilter: "blur(20px)",
+          boxShadow: "0 -4px 30px rgba(0, 0, 0, 0.3)"
+        }}
       >
-        <div className="flex gap-2">
-          <input
+        <div className="flex gap-3">
+          <motion.input
             type="text"
             value={input}
             onChange={(e) => setInput(e.target.value)}
             onKeyDown={(e) => e.key === "Enter" && handleSend()}
             placeholder={`给${boyfriend.name}发消息...`}
-            className="flex-1"
+            className="flex-1 px-4 py-2.5 rounded-full text-sm"
             disabled={isSending}
+            whileFocus={{ scale: 1.01 }}
+            style={{
+              background: "var(--bg-card)",
+              border: "1px solid var(--border-cosmic)",
+              color: "var(--text-primary)",
+              outline: "none"
+            }}
           />
-          <button
+          <motion.button
             onClick={handleSend}
             disabled={!input.trim() || isSending}
-            className="px-4 py-2 rounded-full text-sm font-medium text-white disabled:opacity-50"
-            style={{ background: "var(--gradient-pink)" }}
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+            className="px-5 py-2.5 rounded-full text-sm font-medium text-white disabled:opacity-50"
+            style={{
+              background: "var(--gradient-cosmic)",
+              border: "1px solid var(--accent-rose)",
+              boxShadow: "0 4px 20px var(--glow-rose)"
+            }}
           >
-            发送
-          </button>
+            ✦
+          </motion.button>
         </div>
-      </div>
+      </motion.div>
     </div>
   );
 }
 
 function ChatLoading() {
   return (
-    <div className="flex-1 flex items-center justify-center">
-      <div className="flex gap-2">
-        <div className="w-2 h-2 rounded-full typing-dot" style={{ background: "var(--accent-pink)" }} />
-        <div className="w-2 h-2 rounded-full typing-dot" style={{ background: "var(--accent-pink)" }} />
-        <div className="w-2 h-2 rounded-full typing-dot" style={{ background: "var(--accent-pink)" }} />
-      </div>
+    <div className="flex-1 flex items-center justify-center relative" style={{ background: "var(--gradient-cosmic)" }}>
+      <StarryBackground starCount={60} particleCount={15} />
+      <motion.div
+        initial={{ opacity: 0, scale: 0.8 }}
+        animate={{ opacity: 1, scale: 1 }}
+        className="relative z-10 flex flex-col items-center gap-4"
+      >
+        <motion.div
+          className="w-12 h-12 rounded-full"
+          style={{ background: "var(--gradient-pink)" }}
+          animate={{ scale: [1, 1.3, 1], opacity: [0.5, 0.8, 0.5] }}
+          transition={{ duration: 1.5, repeat: Infinity }}
+        />
+        <motion.p
+          className="text-sm font-medium"
+          style={{ color: "var(--text-secondary)" }}
+          animate={{ opacity: [0.5, 1, 0.5] }}
+          transition={{ duration: 1.5, repeat: Infinity }}
+        >
+          正在连接心动信号...
+        </motion.p>
+      </motion.div>
     </div>
   );
 }
 
 export default function ChatPage() {
   return (
-    <div className="min-h-screen flex flex-col relative" style={{ background: "var(--bg-primary)" }}>
-      <StarField />
-      <AuroraBackground />
+    <div className="min-h-screen flex flex-col relative" style={{ background: "var(--gradient-cosmic)" }}>
+      <StarryBackground starCount={80} particleCount={20} />
       <div className="relative z-10 flex flex-col h-screen">
         <Suspense fallback={<ChatLoading />}>
           <ChatContent />

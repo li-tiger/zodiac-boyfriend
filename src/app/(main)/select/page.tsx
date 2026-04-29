@@ -3,8 +3,9 @@
 import React, { useState, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/contexts/AuthContext";
+import { motion, AnimatePresence } from "framer-motion";
 import { BOYFRIENDS, ZODIAC_NAMES, ZODIAC_SIGNS, RELATION_STAGE_LABELS, type ZodiacSign, type RelationStage } from "@/constants";
-import { StarField, AuroraBackground } from "@/components/BackgroundEffects";
+import StarryBackground from "@/components/StarryBackground";
 import { getCharacterImage, getZodiacEmoji } from "@/constants/images-game";
 
 interface ProgressItem {
@@ -13,12 +14,56 @@ interface ProgressItem {
   progress_value: number;
 }
 
+const containerVariants = {
+  hidden: { opacity: 0 },
+  visible: {
+    opacity: 1,
+    transition: {
+      staggerChildren: 0.05,
+      delayChildren: 0.2
+    }
+  }
+};
+
+const itemVariants = {
+  hidden: { opacity: 0, y: 20, scale: 0.9 },
+  visible: {
+    opacity: 1,
+    y: 0,
+    scale: 1,
+    transition: {
+      type: "spring" as const,
+      stiffness: 300,
+      damping: 20
+    }
+  }
+};
+
+const cardVariants = {
+  hidden: { opacity: 0, y: 30 },
+  visible: {
+    opacity: 1,
+    y: 0,
+    transition: {
+      type: "spring" as const,
+      stiffness: 200,
+      damping: 25,
+      delay: 0.3
+    }
+  },
+  hover: {
+    scale: 1.03,
+    transition: { type: "spring" as const, stiffness: 400, damping: 25 }
+  }
+};
+
 export default function SelectPage() {
   const { user, loading: authLoading } = useAuth();
   const router = useRouter();
   const [selectedSign, setSelectedSign] = useState<ZodiacSign | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [progressList, setProgressList] = useState<ProgressItem[]>([]);
+  const [hoveredSign, setHoveredSign] = useState<ZodiacSign | null>(null);
 
   const fetchProgress = useCallback(async () => {
     try {
@@ -69,15 +114,39 @@ export default function SelectPage() {
 
   if (authLoading || isLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center" style={{ background: "var(--bg-primary)" }}>
-        <div className="flex flex-col items-center gap-3">
-          <div className="flex gap-2">
-            <div className="w-2 h-2 rounded-full typing-dot" style={{ background: "var(--accent-pink)" }} />
-            <div className="w-2 h-2 rounded-full typing-dot" style={{ background: "var(--accent-pink)", animationDelay: "0.2s" }} />
-            <div className="w-2 h-2 rounded-full typing-dot" style={{ background: "var(--accent-pink)", animationDelay: "0.4s" }} />
+      <div className="min-h-screen flex items-center justify-center relative" style={{ background: "var(--gradient-cosmic)" }}>
+        <StarryBackground starCount={60} particleCount={15} />
+        <motion.div
+          initial={{ opacity: 0, scale: 0.8 }}
+          animate={{ opacity: 1, scale: 1 }}
+          className="relative z-10 flex flex-col items-center gap-4"
+        >
+          <div className="relative w-16 h-16">
+            <motion.div
+              className="absolute inset-0 rounded-full"
+              style={{ background: "var(--gradient-pink)" }}
+              animate={{ scale: [1, 1.5, 1], opacity: [0.5, 0, 0.5] }}
+              transition={{ duration: 2, repeat: Infinity }}
+            />
+            <div className="absolute inset-2 rounded-full flex items-center justify-center" style={{ background: "var(--bg-primary)" }}>
+              <motion.span
+                className="text-2xl"
+                animate={{ rotate: 360 }}
+                transition={{ duration: 3, repeat: Infinity, ease: "linear" }}
+              >
+                ✦
+              </motion.span>
+            </div>
           </div>
-          <p className="text-xs" style={{ color: "var(--text-secondary)" }}>加载中...</p>
-        </div>
+          <motion.p
+            className="text-sm font-medium"
+            style={{ color: "var(--text-secondary)" }}
+            animate={{ opacity: [0.5, 1, 0.5] }}
+            transition={{ duration: 1.5, repeat: Infinity }}
+          >
+            正在连接心动宇宙...
+          </motion.p>
+        </motion.div>
       </div>
     );
   }
@@ -87,67 +156,121 @@ export default function SelectPage() {
   }
 
   const selectedProgress = selectedSign ? getProgressForSign(selectedSign) : null;
+  const hoveredProgress = hoveredSign ? getProgressForSign(hoveredSign) : null;
+  const displaySign = selectedSign || hoveredSign;
+  const displayProgress = selectedSign ? selectedProgress : hoveredProgress;
 
   return (
-    <div className="min-h-screen relative" style={{ background: "var(--bg-primary)" }}>
-      <StarField />
-      <AuroraBackground />
+    <div className="min-h-screen relative" style={{ background: "var(--gradient-cosmic)" }}>
+      <StarryBackground starCount={100} particleCount={25} />
 
       <div className="relative z-10 max-w-lg mx-auto px-4 pt-12 pb-24">
-        <div className="text-center mb-6">
-          <h1 className="text-xl font-bold" style={{ color: "var(--text-primary)" }}>
-            选择你的心动男友
-          </h1>
-          <p className="text-xs mt-1" style={{ color: "var(--text-secondary)" }}>
-            十二星座，十二种心动
+        <motion.div
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6, ease: "easeOut" }}
+          className="text-center mb-8"
+        >
+          <motion.h1
+            className="text-2xl font-bold mb-2"
+            style={{
+              color: "var(--text-primary)",
+              textShadow: "0 0 30px var(--glow-rose)"
+            }}
+            animate={{ textShadow: ["0 0 20px var(--glow-rose)", "0 0 40px var(--glow-rose)", "0 0 20px var(--glow-rose)"] }}
+            transition={{ duration: 3, repeat: Infinity }}
+          >
+            探索心动宇宙
+          </motion.h1>
+          <p className="text-sm" style={{ color: "var(--text-secondary)" }}>
+            十二星座，十二种心动可能
           </p>
-        </div>
+        </motion.div>
 
-        <div className="grid grid-cols-3 gap-3">
+        <motion.div
+          variants={containerVariants}
+          initial="hidden"
+          animate="visible"
+          className="grid grid-cols-3 gap-3"
+        >
           {ZODIAC_SIGNS.map((sign) => {
             const bf = BOYFRIENDS[sign];
             const isSelected = selectedSign === sign;
+            const isHovered = hoveredSign === sign;
             const progress = getProgressForSign(sign);
             const hasProgress = !!progress;
+            const isLover = progress?.stage === "lover";
 
             return (
-              <button
+              <motion.button
                 key={sign}
+                variants={itemVariants}
+                whileHover="hover"
+                onHoverStart={() => setHoveredSign(sign)}
+                onHoverEnd={() => setHoveredSign(null)}
                 onClick={() => setSelectedSign(sign)}
-                className={`relative p-3 rounded-2xl border transition-all duration-200 ${
-                  isSelected ? "scale-[1.02]" : "hover:scale-[1.02]"
-                }`}
-                style={
-                  isSelected
-                    ? { borderColor: "var(--accent-pink)", background: "rgba(13,27,46,0.9)" }
-                    : { borderColor: hasProgress ? "var(--accent-gold)" : "var(--border-light)", background: "rgba(13,27,46,0.6)" }
-                }
+                className="relative p-3 rounded-2xl border"
+                style={{
+                  borderColor: isSelected
+                    ? "var(--accent-rose)"
+                    : hasProgress
+                    ? "var(--accent-gold)"
+                    : "var(--border-cosmic)",
+                  background: isSelected || isHovered
+                    ? "var(--bg-card-hover)"
+                    : "var(--bg-card)",
+                  boxShadow: isSelected
+                    ? "0 0 20px var(--glow-rose)"
+                    : isHovered
+                    ? "0 0 15px var(--glow-silver)"
+                    : "none"
+                }}
               >
                 {isSelected && (
-                  <div
-                    className="absolute top-1 right-1 w-4 h-4 rounded-full flex items-center justify-center text-[10px]"
-                    style={{ background: "var(--accent-pink)", color: "white" }}
+                  <motion.div
+                    initial={{ scale: 0 }}
+                    animate={{ scale: 1 }}
+                    className="absolute -top-1.5 -right-1.5 w-5 h-5 rounded-full flex items-center justify-center text-[10px]"
+                    style={{
+                      background: "var(--gradient-pink)",
+                      color: "white",
+                      boxShadow: "0 0 10px var(--glow-pink)"
+                    }}
                   >
-                    ✓
-                  </div>
+                    ✦
+                  </motion.div>
                 )}
 
-                <div
-                  className={`w-12 h-12 mx-auto rounded-full mb-2 overflow-hidden flex items-center justify-center ${
-                    isSelected ? "glow-border" : ""
-                  }`}
-                  style={{ background: "var(--bg-primary)" }}
+                <motion.div
+                  className="w-14 h-14 mx-auto rounded-full mb-2 overflow-hidden"
+                  style={{
+                    background: "var(--bg-primary)",
+                    boxShadow: isSelected
+                      ? "0 0 20px var(--glow-rose)"
+                      : "0 0 10px var(--glow-silver)"
+                  }}
+                  animate={{
+                    boxShadow: isSelected
+                      ? ["0 0 15px var(--glow-rose)", "0 0 25px var(--glow-rose)", "0 0 15px var(--glow-rose)"]
+                      : isHovered
+                      ? ["0 0 8px var(--glow-silver)", "0 0 15px var(--glow-silver)", "0 0 8px var(--glow-silver)"]
+                      : "0 0 10px var(--glow-silver)"
+                  }}
+                  transition={{ duration: 2, repeat: Infinity }}
                 >
                   <img
                     src={getCharacterImage(sign)}
                     alt={bf.name}
                     className="w-full h-full object-cover"
-                    style={{ opacity: 0.8 }}
+                    style={{
+                      opacity: isSelected || isHovered ? 1 : 0.75,
+                      filter: isSelected ? "drop-shadow(0 0 8px var(--accent-rose))" : "none"
+                    }}
                   />
-                </div>
+                </motion.div>
 
                 <div className="flex items-center justify-center gap-1 mb-1">
-                  <span className="text-sm">{getZodiacEmoji(sign)}</span>
+                  <span className="text-base">{getZodiacEmoji(sign)}</span>
                   <p className="text-xs font-medium" style={{ color: "var(--text-primary)" }}>
                     {ZODIAC_NAMES[sign]}
                   </p>
@@ -157,125 +280,255 @@ export default function SelectPage() {
                   {bf.name}
                 </p>
 
-                {hasProgress && progress.stage === "lover" && (
-                  <div
-                    className="absolute -top-1 -right-1 w-5 h-5 rounded-full flex items-center justify-center text-[8px]"
-                    style={{ background: "var(--gradient-pink)", color: "white" }}
+                {isLover && (
+                  <motion.div
+                    initial={{ scale: 0 }}
+                    animate={{ scale: 1 }}
+                    className="absolute -top-1 -right-1 w-5 h-5 rounded-full flex items-center justify-center text-xs"
+                    style={{
+                      background: "var(--gradient-pink)",
+                      color: "white",
+                      boxShadow: "0 0 10px var(--glow-pink)"
+                    }}
                   >
                     💕
-                  </div>
+                  </motion.div>
                 )}
 
-                {hasProgress && progress.stage !== "lover" && (
+                {hasProgress && !isLover && (
                   <div
                     className="absolute bottom-1 left-1/2 -translate-x-1/2 text-[8px] px-1.5 py-0.5 rounded-full whitespace-nowrap"
-                    style={{ background: "var(--accent-gold)", color: "var(--bg-primary)" }}
+                    style={{
+                      background: "var(--accent-gold)",
+                      color: "var(--bg-primary)",
+                      boxShadow: "0 0 8px rgba(212, 165, 116, 0.5)"
+                    }}
                   >
                     {RELATION_STAGE_LABELS[progress.stage]}
                   </div>
                 )}
-              </button>
+
+                {hasProgress && (
+                  <div
+                    className="absolute bottom-0 left-0 right-0 h-0.5 rounded-b-2xl overflow-hidden"
+                    style={{ background: "var(--bg-primary)" }}
+                  >
+                    <motion.div
+                      className="h-full"
+                      style={{
+                        background: isLover ? "var(--gradient-pink)" : "var(--gradient-gold)"
+                      }}
+                      initial={{ width: 0 }}
+                      animate={{ width: `${progress.progress_value}%` }}
+                      transition={{ duration: 0.8, delay: 0.5 }}
+                    />
+                  </div>
+                )}
+              </motion.button>
             );
           })}
-        </div>
+        </motion.div>
 
-        {selectedSign && (
-          <div className="mt-6 p-4 rounded-2xl border" style={{ background: "rgba(13,27,46,0.8)", borderColor: "var(--border-light)" }}>
-            <div className="flex items-center gap-3 mb-3">
-              <div
-                className="w-14 h-14 rounded-full overflow-hidden glow-border"
-                style={{ background: "var(--bg-primary)" }}
-              >
-                <img
-                  src={getCharacterImage(selectedSign)}
-                  alt={BOYFRIENDS[selectedSign].name}
-                  className="w-full h-full object-cover"
-                />
-              </div>
-              <div className="flex-1">
-                <div className="flex items-center gap-2 mb-1">
-                  <span className="text-lg">{getZodiacEmoji(selectedSign)}</span>
-                  <h3 className="text-sm font-bold" style={{ color: "var(--text-primary)" }}>
-                    {BOYFRIENDS[selectedSign].name}
-                  </h3>
-                </div>
-                <p className="text-xs" style={{ color: "var(--accent-pink)" }}>
-                  {BOYFRIENDS[selectedSign].personality}
-                </p>
-                {selectedProgress && (
-                  <p className="text-[10px] mt-0.5" style={{ color: "var(--text-muted)" }}>
-                    {RELATION_STAGE_LABELS[selectedProgress.stage]} · {selectedProgress.progress_value}%
-                  </p>
-                )}
-              </div>
-            </div>
-
-            <p className="text-xs leading-relaxed mb-3" style={{ color: "var(--text-secondary)" }}>
-              {BOYFRIENDS[selectedSign].introduction}
-            </p>
-
-            {BOYFRIENDS[selectedSign].occupation && (
-              <div className="flex items-center gap-2 mb-3">
-                <span className="text-xs px-2 py-1 rounded-full" style={{ background: "var(--bg-primary)", color: "var(--text-secondary)" }}>
-                  职业：{BOYFRIENDS[selectedSign].occupation}
-                </span>
-              </div>
-            )}
-
-            <button
-              onClick={handleStart}
-              disabled={isLoading}
-              className="w-full py-3 rounded-full text-sm font-medium text-white transition-all hover:scale-[1.02] disabled:opacity-50"
-              style={{ background: "var(--gradient-pink)", boxShadow: "0 4px 16px var(--glow-pink)" }}
+        <AnimatePresence mode="wait">
+          {displaySign && (
+            <motion.div
+              key={displaySign}
+              variants={cardVariants}
+              initial="hidden"
+              animate="visible"
+              exit={{ opacity: 0, y: -20, scale: 0.95 }}
+              whileHover="hover"
+              className="mt-6 p-5 rounded-2xl border"
+              style={{
+                background: "var(--bg-card)",
+                borderColor: "var(--border-cosmic)",
+                boxShadow: "0 8px 32px rgba(0, 0, 0, 0.3)"
+              }}
             >
-              {isLoading
-                ? "请稍候..."
-                : selectedProgress
-                ? `继续和${BOYFRIENDS[selectedSign].name}的故事`
-                : `开始和${BOYFRIENDS[selectedSign].name}的故事`}
-            </button>
-          </div>
-        )}
+              <div className="flex items-center gap-4 mb-4">
+                <motion.div
+                  className="w-16 h-16 rounded-full overflow-hidden"
+                  style={{
+                    background: "var(--bg-primary)",
+                    boxShadow: "0 0 20px var(--glow-rose)"
+                  }}
+                  animate={{ boxShadow: ["0 0 15px var(--glow-rose)", "0 0 25px var(--glow-rose)", "0 0 15px var(--glow-rose)"] }}
+                  transition={{ duration: 2.5, repeat: Infinity }}
+                >
+                  <img
+                    src={getCharacterImage(displaySign)}
+                    alt={BOYFRIENDS[displaySign].name}
+                    className="w-full h-full object-cover"
+                    style={{ filter: "drop-shadow(0 0 5px var(--accent-rose))" }}
+                  />
+                </motion.div>
+                <div className="flex-1">
+                  <div className="flex items-center gap-2 mb-1.5">
+                    <span className="text-xl">{getZodiacEmoji(displaySign)}</span>
+                    <h3 className="text-base font-bold" style={{ color: "var(--text-primary)" }}>
+                      {BOYFRIENDS[displaySign].name}
+                    </h3>
+                    {displayProgress?.stage === "lover" && (
+                      <motion.span
+                        animate={{ scale: [1, 1.2, 1] }}
+                        transition={{ duration: 1.5, repeat: Infinity }}
+                        className="text-sm"
+                      >
+                        💕
+                      </motion.span>
+                    )}
+                  </div>
+                  <p className="text-xs mb-1" style={{ color: "var(--accent-rose)" }}>
+                    {BOYFRIENDS[displaySign].personality}
+                  </p>
+                  {displayProgress && (
+                    <div className="flex items-center gap-2">
+                      <div
+                        className="flex-1 h-1.5 rounded-full overflow-hidden"
+                        style={{ background: "var(--bg-primary)" }}
+                      >
+                        <motion.div
+                          className="h-full rounded-full"
+                          style={{
+                            background: displayProgress.stage === "lover"
+                              ? "var(--gradient-pink)"
+                              : "var(--gradient-gold)"
+                          }}
+                          initial={{ width: 0 }}
+                          animate={{ width: `${displayProgress.progress_value}%` }}
+                          transition={{ duration: 0.8, delay: 0.3 }}
+                        />
+                      </div>
+                      <span className="text-[10px] font-medium" style={{ color: "var(--text-secondary)" }}>
+                        {displayProgress.progress_value}%
+                      </span>
+                    </div>
+                  )}
+                </div>
+              </div>
 
-        <div className="mt-6 p-4 rounded-xl" style={{ background: "rgba(13,27,46,0.6)", border: "1px solid var(--border-light)" }}>
-          <h3 className="text-xs font-bold mb-2" style={{ color: "var(--text-primary)" }}>
-            💡 收集提示
+              <p className="text-xs leading-relaxed mb-4" style={{ color: "var(--text-secondary)" }}>
+                {BOYFRIENDS[displaySign].introduction}
+              </p>
+
+              {BOYFRIENDS[displaySign].occupation && (
+                <div className="flex items-center gap-2 mb-4">
+                  <span
+                    className="text-xs px-3 py-1.5 rounded-full"
+                    style={{
+                      background: "var(--bg-primary)",
+                      color: "var(--accent-moon)",
+                      border: "1px solid var(--border-cosmic)"
+                    }}
+                  >
+                    💼 {BOYFRIENDS[displaySign].occupation}
+                  </span>
+                </div>
+              )}
+
+              <motion.button
+                onClick={handleStart}
+                disabled={isLoading}
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
+                className="w-full py-3.5 rounded-full text-sm font-medium text-white relative overflow-hidden"
+                style={{
+                  background: "var(--gradient-cosmic)",
+                  boxShadow: "0 4px 20px var(--glow-rose)"
+                }}
+              >
+                <motion.span
+                  className="absolute inset-0"
+                  style={{
+                    background: "linear-gradient(135deg, var(--accent-rose) 0%, var(--accent-gold) 100%)",
+                    opacity: 0
+                  }}
+                  whileHover={{ opacity: 1 }}
+                  transition={{ duration: 0.3 }}
+                />
+                <span className="relative z-10">
+                  {isLoading
+                    ? "正在连接心动信号..."
+                    : displayProgress
+                    ? `继续和${BOYFRIENDS[displaySign].name}的故事 ✦`
+                    : `开始和${BOYFRIENDS[displaySign].name}的故事 ✦`}
+                </span>
+              </motion.button>
+            </motion.div>
+          )}
+        </AnimatePresence>
+
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.6 }}
+          className="mt-6 p-4 rounded-xl"
+          style={{
+            background: "var(--bg-card)",
+            border: "1px solid var(--border-cosmic)"
+          }}
+        >
+          <h3 className="text-xs font-bold mb-2 flex items-center gap-1.5" style={{ color: "var(--accent-moon)" }}>
+            <span>💡</span>
+            <span>心动提示</span>
           </h3>
-          <p className="text-[10px] leading-relaxed" style={{ color: "var(--text-secondary)" }}>
-            攻略完成后，该星座男友将进入"恋人日常区"。你可以随时回来与他们聊天，继续探索更多故事。
+          <p className="text-[11px] leading-relaxed" style={{ color: "var(--text-secondary)" }}>
+            与心仪的星座男友深入交流，解锁他的全部故事。当你与他的亲密度达到100%时，他将正式成为你的恋人，随时随地与你互动。
           </p>
-        </div>
+        </motion.div>
       </div>
 
-      <div
-        className="fixed bottom-0 left-0 right-0 z-50 px-5 py-3 flex justify-around"
-        style={{ background: "rgba(5,10,18,0.95)", borderTop: "1px solid var(--border-light)", backdropFilter: "blur(16px)" }}
+      <motion.div
+        initial={{ y: 100 }}
+        animate={{ y: 0 }}
+        transition={{ type: "spring", stiffness: 200, damping: 25 }}
+        className="fixed bottom-0 left-0 right-0 z-50 px-5 py-3"
+        style={{
+          background: "rgba(10, 10, 26, 0.85)",
+          borderTop: "1px solid var(--border-cosmic)",
+          backdropFilter: "blur(20px)",
+          boxShadow: "0 -4px 30px rgba(0, 0, 0, 0.3)"
+        }}
       >
-        <button
-          onClick={() => router.push("/home")}
-          className="flex flex-col items-center gap-0.5"
-          style={{ color: "var(--text-muted)" }}
-        >
-          <span className="text-lg">🏠</span>
-          <span className="text-[10px]">首页</span>
-        </button>
-        <button
-          onClick={() => router.push("/select")}
-          className="flex flex-col items-center gap-0.5"
-          style={{ color: "var(--accent-pink)" }}
-        >
-          <span className="text-lg">✨</span>
-          <span className="text-[10px] font-medium">选择</span>
-        </button>
-        <button
-          onClick={() => router.push("/gallery")}
-          className="flex flex-col items-center gap-0.5"
-          style={{ color: "var(--text-muted)" }}
-        >
-          <span className="text-lg">📖</span>
-          <span className="text-[10px]">手账</span>
-        </button>
-      </div>
+        <div className="max-w-lg mx-auto flex justify-around">
+          <motion.button
+            onClick={() => router.push("/home")}
+            whileHover={{ scale: 1.1 }}
+            whileTap={{ scale: 0.95 }}
+            className="flex flex-col items-center gap-0.5 py-1 px-4"
+            style={{ color: "var(--text-muted)" }}
+          >
+            <span className="text-lg">🏠</span>
+            <span className="text-[10px]">首页</span>
+          </motion.button>
+          <motion.button
+            onClick={() => router.push("/select")}
+            whileHover={{ scale: 1.1 }}
+            whileTap={{ scale: 0.95 }}
+            className="flex flex-col items-center gap-0.5 py-1 px-4 relative"
+            style={{ color: "var(--accent-rose)" }}
+          >
+            <span className="text-lg">✨</span>
+            <span className="text-[10px] font-medium">选择</span>
+            <motion.div
+              className="absolute -bottom-1 left-1/2 -translate-x-1/2 w-6 h-0.5 rounded-full"
+              style={{ background: "var(--gradient-pink)" }}
+              animate={{ scale: [1, 1.5, 1] }}
+              transition={{ duration: 2, repeat: Infinity }}
+            />
+          </motion.button>
+          <motion.button
+            onClick={() => router.push("/gallery")}
+            whileHover={{ scale: 1.1 }}
+            whileTap={{ scale: 0.95 }}
+            className="flex flex-col items-center gap-0.5 py-1 px-4"
+            style={{ color: "var(--text-muted)" }}
+          >
+            <span className="text-lg">📖</span>
+            <span className="text-[10px]">手账</span>
+          </motion.button>
+        </div>
+      </motion.div>
     </div>
   );
 }

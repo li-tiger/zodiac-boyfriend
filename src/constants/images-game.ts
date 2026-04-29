@@ -1,45 +1,45 @@
 import type { ZodiacSign } from "@/types";
 
 export const GAME_IMAGES = {
-  logo: "https://picsum.photos/seed/zodiac-logo/400/400",
+  logo: "/images/characters/Taurus.png",
 
-  heroScene: "https://picsum.photos/seed/zodiac-hero/1200/600",
+  heroScene: "/images/characters/Taurus.png",
 
-  featureChat: "https://picsum.photos/seed/zodiac-chat/600/400",
+  featureChat: "/images/characters/Taurus.png",
 
-  featureMemory: "https://picsum.photos/seed/zodiac-memory/600/400",
+  featureMemory: "/images/characters/Taurus.png",
 
-  featureStory: "https://picsum.photos/seed/zodiac-story/600/400",
+  featureStory: "/images/characters/Taurus.png",
 
-  characterLeo: "https://picsum.photos/seed/zodiac-leo/400/500",
+  characterAries: "/images/characters/Aries1.png",
 
-  characterVirgo: "https://picsum.photos/seed/zodiac-virgo/400/500",
+  characterTaurus: "/images/characters/Taurus.png",
 
-  characterScorpio: "https://picsum.photos/seed/zodiac-scorpio/400/500",
+  characterGemini: "/images/characters/Gemini.png",
 
-  characterAries: "https://picsum.photos/seed/zodiac-aries/400/500",
+  characterCancer: "/images/characters/Cancer.png",
 
-  characterTaurus: "https://picsum.photos/seed/zodiac-taurus/400/500",
+  characterLeo: "/images/characters/Leo.png",
 
-  characterGemini: "https://picsum.photos/seed/zodiac-gemini/400/500",
+  characterVirgo: "/images/characters/Virgo.png",
 
-  characterCancer: "https://picsum.photos/seed/zodiac-cancer/400/500",
+  characterLibra: "/images/characters/Libra.png",
 
-  characterLibra: "https://picsum.photos/seed/zodiac-libra/400/500",
+  characterScorpio: "/images/characters/Scorpio.png",
 
-  characterSagittarius: "https://picsum.photos/seed/zodiac-sagittarius/400/500",
+  characterSagittarius: "/images/characters/Sagittarius.png",
 
-  characterCapricorn: "https://picsum.photos/seed/zodiac-capricorn/400/500",
+  characterCapricorn: "/images/characters/Capricorn.png",
 
-  characterAquarius: "https://picsum.photos/seed/zodiac-aquarius/400/500",
+  characterAquarius: "/images/characters/Aquarius.png",
 
-  characterPisces: "https://picsum.photos/seed/zodiac-pisces/400/500",
+  characterPisces: "/images/characters/Pisces.png",
 
-  featureIcon1: "https://picsum.photos/seed/icon-heart/200/200",
+  featureIcon1: "/images/characters/Taurus.png",
 
-  featureIcon2: "https://picsum.photos/seed/icon-star/200/200",
+  featureIcon2: "/images/characters/Taurus.png",
 
-  featureIcon3: "https://picsum.photos/seed/icon-constellation/200/200",
+  featureIcon3: "/images/characters/Taurus.png",
 };
 
 export function getCharacterImage(sign: ZodiacSign): string {

@@ -12,6 +12,7 @@
     "@supabase/supabase-js": "^2.104.1",
     "antd-mobile": "^5.42.3",
     "bcryptjs": "^3.0.3",
+    "framer-motion": "^12.38.0",
     "jose": "^6.2.2",
     "next": "16.2.4",
     "react": "19.2.4",

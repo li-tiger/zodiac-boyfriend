@@ -3,6 +3,7 @@ import { createClient } from "@/lib/db";
 import { BOYFRIENDS, type ZodiacSign, type RelationStage } from "@/constants";
 import { createDeepSeekClient, buildBoyfriendSystemPrompt } from "@/lib/deepseek";
 import { matchDailyTopic, matchImageMessage, getRandomFallbackImage, type DailyTopic } from "@/constants/daily-topics";
+import { matchSceneFromMessage, generateSceneImage } from "@/lib/volcano-image";
 
 interface ChatResponse {
   message: unknown;
@@ -12,6 +13,7 @@ interface ChatResponse {
   imageTrigger?: { id: number; imageUrl: string } | null;
   occupationUnlocked?: boolean;
   callName?: string;
+  imageGenerating?: boolean;
 }
 
 export async function GET(request: Request) {
@@ -266,15 +268,33 @@ export async function POST(request: Request) {
     }
 
     const matchedImage = matchImageMessage(message);
+    const matchedScene = matchSceneFromMessage(message);
+
+    let imageUrl: string | null = null;
+    let imageGenerating = false;
+
+    if (matchedScene) {
+      try {
+        const generatedImage = await generateSceneImage(zodiac_sign as ZodiacSign, matchedScene);
+        imageUrl = generatedImage.url;
+      } catch (error) {
+        console.error("Image generation failed, using fallback:", error);
+        const fallback = matchedImage || getRandomFallbackImage();
+        imageUrl = fallback.imageUrl;
+      }
+    } else if (matchedImage) {
+      imageUrl = matchedImage.imageUrl;
+    }
 
     const response: ChatResponse = {
       message: assistantMsg,
       stage: newStage || currentStage,
       progress_value: newProgress,
       dailyTopic: dailyTopicTriggered,
-      imageTrigger: matchedImage ? { id: matchedImage.id, imageUrl: matchedImage.imageUrl } : null,
+      imageTrigger: imageUrl ? { id: matchedImage?.id || 0, imageUrl } : null,
       occupationUnlocked: newOccupationUnlocked && !occupationUnlocked,
       callName: getCallNameForStage(bf.callNames, newStage || currentStage),
+      imageGenerating,
     };
 
     return NextResponse.json(response);

@@ -1,12 +1,13 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useRouter } from "next/navigation";
 import { useAuth } from "@/contexts/AuthContext";
-import { GAME_IMAGES, getCharacterImage, getZodiacEmoji } from "@/constants/images-game";
-import { StarField, AuroraBackground } from "@/components/BackgroundEffects";
+import { getCharacterImage, getZodiacEmoji } from "@/constants/images-game";
 import { BOYFRIENDS, ZODIAC_NAMES, RELATION_STAGE_CONFIG, type ZodiacSign, type RelationStage } from "@/constants";
 import type { Progress } from "@/types";
+import { motion } from "framer-motion";
+import StarryBackground from "@/components/StarryBackground";
 
 interface CurrentProgress extends Progress {
   id?: number;
@@ -17,16 +18,21 @@ function LogoSection() {
   const [imgLoaded, setImgLoaded] = useState(false);
 
   return (
-    <div className="flex flex-col items-center gap-3 mb-6 animate-float">
+    <motion.div
+      initial={{ opacity: 0, y: -20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.8 }}
+      className="flex flex-col items-center gap-4 mb-8"
+    >
       <div
-        className="relative w-16 h-16 rounded-full overflow-hidden glow-border animate-glow-pulse"
+        className="relative w-20 h-20 rounded-full overflow-hidden glow-border animate-glow-pulse"
         style={{ background: "var(--bg-card)" }}
       >
         {!imgLoaded && (
           <div className="absolute inset-0 animate-shimmer" />
         )}
         <img
-          src={GAME_IMAGES.logo}
+          src="https://picsum.photos/seed/zodiac-logo/400/400"
           alt="Logo"
           className="w-full h-full object-cover"
           onLoad={() => setImgLoaded(true)}
@@ -34,14 +40,14 @@ function LogoSection() {
         />
       </div>
       <div className="text-center">
-        <h1 className="text-lg font-bold" style={{ color: "var(--text-primary)" }}>
+        <h1 className="text-xl font-bold cosmic-title tracking-wide">
           12星座男友手账
         </h1>
-        <p className="text-xs mt-0.5" style={{ color: "var(--accent-pink)" }}>
+        <p className="text-sm mt-1" style={{ color: "var(--accent-moon)" }}>
           心动宇宙 · 遇见你的他
         </p>
       </div>
-    </div>
+    </motion.div>
   );
 }
 
@@ -90,14 +96,20 @@ function CurrentBoyfriendCard({
     : ((progressPercentage - currentThreshold) / (nextThreshold - currentThreshold)) * 100;
 
   return (
-    <div className="relative w-full rounded-2xl overflow-hidden mb-6 glow-border" style={{ background: "var(--bg-card)" }}>
-      <div className="absolute inset-0 bg-gradient-to-br from-[var(--accent-pink)]/10 to-transparent" />
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.6 }}
+      className="relative w-full rounded-2xl overflow-hidden mb-6 glass-card"
+    >
+      <div className="absolute inset-0 bg-gradient-br from-[var(--accent-rose)]/10 to-transparent" />
 
-      <div className="relative z-10 p-5">
-        <div className="flex items-center gap-4 mb-4">
-          <div
-            className="relative w-20 h-20 rounded-full overflow-hidden glow-border flex-shrink-0"
+      <div className="relative z-10 p-6">
+        <div className="flex items-center gap-5 mb-5">
+          <motion.div
+            className="relative w-24 h-24 rounded-full overflow-hidden glow-border flex-shrink-0 card-inner-glow"
             style={{ background: "var(--bg-primary)" }}
+            whileHover={{ scale: 1.05 }}
           >
             {!imgLoaded && (
               <div className="absolute inset-0 animate-shimmer" />
@@ -109,63 +121,68 @@ function CurrentBoyfriendCard({
               onLoad={() => setImgLoaded(true)}
               style={{ opacity: imgLoaded ? 1 : 0 }}
             />
-          </div>
+          </motion.div>
 
           <div className="flex-1 min-w-0">
-            <div className="flex items-center gap-2 mb-1">
-              <span className="text-xl">{getZodiacEmoji(progress.zodiac_sign as ZodiacSign)}</span>
-              <span className="text-sm font-medium" style={{ color: "var(--accent-pink)" }}>
+            <div className="flex items-center gap-2 mb-2">
+              <span className="text-2xl zodiac-icon">{getZodiacEmoji(progress.zodiac_sign as ZodiacSign)}</span>
+              <span className="text-sm font-medium px-2 py-0.5 rounded-full glass-card"
+                style={{ color: "var(--accent-moon)", borderColor: "var(--accent-moon)" }}>
                 {ZODIAC_NAMES[progress.zodiac_sign as ZodiacSign]}
               </span>
             </div>
-            <h2 className="text-lg font-bold mb-1" style={{ color: "var(--text-primary)" }}>
+            <h2 className="text-xl font-bold mb-1" style={{ color: "var(--text-primary)" }}>
               {boyfriend.name}
             </h2>
-            <p className="text-xs" style={{ color: "var(--text-secondary)" }}>
+            <p className="text-sm" style={{ color: "var(--accent-rose)" }}>
               {stageConfig.label}
             </p>
           </div>
 
-          <button
+          <motion.button
             onClick={onChange}
-            className="px-3 py-1.5 rounded-full text-xs transition-all hover:scale-105"
+            className="px-4 py-2 rounded-full text-sm glass-card-hover"
             style={{ border: "1px solid var(--border-light)", color: "var(--text-secondary)" }}
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
           >
             切换
-          </button>
+          </motion.button>
         </div>
 
-        <p className="text-sm mb-4 italic" style={{ color: "var(--text-secondary)" }}>
+        <p className="text-sm mb-5 italic" style={{ color: "var(--text-secondary)" }}>
           "{statusText}"
         </p>
 
-        <div className="mb-4">
-          <div className="flex justify-between items-center mb-1.5">
+        <div className="mb-5">
+          <div className="flex justify-between items-center mb-2">
             <span className="text-xs font-medium" style={{ color: "var(--text-secondary)" }}>
               心动进度
             </span>
-            <span className="text-xs" style={{ color: "var(--accent-pink)" }}>
-              {stageConfig.label}
+            <span className="text-xs px-2 py-0.5 rounded-full glass-card" style={{ color: "var(--accent-rose)" }}>
+              {stageConfig.label} · {progressPercentage}%
             </span>
           </div>
 
-          <div className="h-2 rounded-full overflow-hidden" style={{ background: "var(--bg-primary)" }}>
-            <div
-              className="h-full rounded-full transition-all duration-500"
+          <div className="h-3 rounded-full overflow-hidden glass-card" style={{ background: "var(--bg-primary)" }}>
+            <motion.div
+              className="h-full rounded-full"
               style={{
-                width: `${Math.min(stageProgress, 100)}%`,
-                background: "var(--gradient-pink)",
-                boxShadow: "0 0 10px var(--glow-pink)"
+                background: "var(--gradient-rose)",
+                boxShadow: "0 0 15px var(--glow-rose)"
               }}
+              initial={{ width: 0 }}
+              animate={{ width: `${Math.min(stageProgress, 100)}%` }}
+              transition={{ duration: 1, ease: "easeOut" }}
             />
           </div>
 
-          <div className="flex justify-between mt-1.5">
+          <div className="flex justify-between mt-2">
             {sortedThresholds.map((threshold, index) => (
               <div
                 key={threshold.stage}
                 className={`text-[10px] ${progressPercentage >= threshold.threshold ? "opacity-100" : "opacity-40"}`}
-                style={{ color: progressPercentage >= threshold.threshold ? "var(--accent-pink)" : "var(--text-muted)" }}
+                style={{ color: progressPercentage >= threshold.threshold ? "var(--accent-rose)" : "var(--text-muted)" }}
               >
                 {RELATION_STAGE_CONFIG[threshold.stage as RelationStage].label}
               </div>
@@ -173,15 +190,18 @@ function CurrentBoyfriendCard({
           </div>
         </div>
 
-        <button
+        <motion.button
           onClick={onChat}
-          className="w-full py-3 rounded-xl text-sm font-medium text-white transition-all hover:scale-[1.02] active:scale-[0.98]"
-          style={{ background: "var(--gradient-pink)", boxShadow: "0 4px 20px var(--glow-pink)" }}
+          className="w-full py-4 rounded-2xl text-sm font-semibold text-white flex items-center justify-center gap-2"
+          style={{ background: "var(--gradient-rose)", boxShadow: "0 4px 25px var(--glow-rose)" }}
+          whileHover={{ scale: 1.02, boxShadow: "0 8px 35px var(--glow-rose)" }}
+          whileTap={{ scale: 0.98 }}
         >
-          💬 进入聊天
-        </button>
+          <span>💬</span>
+          <span>进入聊天</span>
+        </motion.button>
       </div>
-    </div>
+    </motion.div>
   );
 }
 
@@ -189,89 +209,82 @@ function NoBoyfriendCard({ onSelect }: { onSelect: () => void }) {
   const [imgLoaded, setImgLoaded] = useState(false);
 
   return (
-    <div className="relative w-full rounded-2xl overflow-hidden mb-6 glow-border" style={{ background: "var(--bg-card)" }}>
-      <div className="absolute inset-0 bg-gradient-to-br from-[var(--accent-gold)]/10 to-transparent" />
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.6 }}
+      className="relative w-full rounded-2xl overflow-hidden mb-6 glass-card"
+    >
+      <div className="absolute inset-0 bg-gradient-br from-[var(--accent-moon)]/10 to-transparent" />
 
-      <div className="relative z-10 p-5 text-center">
-        <div
-          className="w-20 h-20 mx-auto rounded-full overflow-hidden mb-4 glow-border"
+      <div className="relative z-10 p-8 text-center">
+        <motion.div
+          className="w-28 h-28 mx-auto rounded-full overflow-hidden mb-6 glow-border-moon"
           style={{ background: "var(--bg-primary)" }}
+          animate={{ y: [0, -10, 0] }}
+          transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
         >
           {!imgLoaded && (
             <div className="w-full h-full animate-shimmer" />
           )}
           <img
-            src={GAME_IMAGES.heroScene}
+            src="https://picsum.photos/seed/zodiac-hero/400/500"
             alt="选择一个男友"
             className="w-full h-full object-cover"
             onLoad={() => setImgLoaded(true)}
             style={{ opacity: imgLoaded ? 0.7 : 0 }}
           />
-        </div>
+        </motion.div>
 
-        <h2 className="text-base font-bold mb-2" style={{ color: "var(--text-primary)" }}>
+        <h2 className="text-lg font-bold mb-2 cosmic-title">
           选择你的心动男友
         </h2>
-        <p className="text-xs mb-4" style={{ color: "var(--text-secondary)" }}>
+        <p className="text-sm mb-6" style={{ color: "var(--text-secondary)" }}>
           12位星座男友等待着与你相遇
         </p>
 
-        <button
+        <motion.button
           onClick={onSelect}
-          className="w-full py-3 rounded-xl text-sm font-medium text-white transition-all hover:scale-[1.02] active:scale-[0.98]"
-          style={{ background: "var(--gradient-pink)", boxShadow: "0 4px 20px var(--glow-pink)" }}
+          className="w-full py-4 rounded-2xl text-sm font-semibold text-white flex items-center justify-center gap-2"
+          style={{ background: "var(--gradient-moon)", boxShadow: "0 4px 25px var(--glow-moon)" }}
+          whileHover={{ scale: 1.02 }}
+          whileTap={{ scale: 0.98 }}
         >
-          ✨ 开始选择
-        </button>
+          <span>✨</span>
+          <span>开始选择</span>
+        </motion.button>
       </div>
-    </div>
+    </motion.div>
   );
 }
 
 function QuickActions({ onGallery }: { onGallery: () => void }) {
-  return (
-    <div className="grid grid-cols-3 gap-3 mb-6">
-      <button
-        onClick={onGallery}
-        className="glass-card p-3 text-center transition-all hover:scale-[1.02]"
-      >
-        <div className="text-2xl mb-1">📖</div>
-        <div className="text-xs font-medium" style={{ color: "var(--text-primary)" }}>恋爱手账</div>
-      </button>
-      <button
-        onClick={onGallery}
-        className="glass-card p-3 text-center transition-all hover:scale-[1.02]"
-      >
-        <div className="text-2xl mb-1">⭐</div>
-        <div className="text-xs font-medium" style={{ color: "var(--text-primary)" }}>星座图鉴</div>
-      </button>
-      <button
-        onClick={onGallery}
-        className="glass-card p-3 text-center transition-all hover:scale-[1.02]"
-      >
-        <div className="text-2xl mb-1">💕</div>
-        <div className="text-xs font-medium" style={{ color: "var(--text-primary)" }}>恋人日常</div>
-      </button>
-    </div>
-  );
-}
+  const router = useRouter();
 
-function FeatureCards() {
   return (
-    <div className="grid grid-cols-3 gap-3 mb-6">
-      <div className="glass-card p-3 text-center">
-        <div className="text-xl mb-1">💬</div>
-        <div className="text-xs font-medium" style={{ color: "var(--text-primary)" }}>心动聊天</div>
-      </div>
-      <div className="glass-card p-3 text-center">
-        <div className="text-xl mb-1">✨</div>
-        <div className="text-xs font-medium" style={{ color: "var(--text-primary)" }}>回忆收集</div>
-      </div>
-      <div className="glass-card p-3 text-center">
-        <div className="text-xl mb-1">📖</div>
-        <div className="text-xs font-medium" style={{ color: "var(--text-primary)" }}>故事进展</div>
-      </div>
-    </div>
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.6, delay: 0.2 }}
+      className="grid grid-cols-3 gap-4 mb-6"
+    >
+      {[
+        { icon: "📖", label: "恋爱手账", path: "/gallery" },
+        { icon: "⭐", label: "星座图鉴", path: "/select" },
+        { icon: "💕", label: "恋人日常", path: "/gallery" },
+      ].map((item, idx) => (
+        <motion.button
+          key={item.label}
+          onClick={() => router.push(item.path)}
+          className="glass-card glass-card-hover p-4 text-center"
+          whileHover={{ scale: 1.05, y: -3 }}
+          whileTap={{ scale: 0.95 }}
+        >
+          <div className="text-2xl mb-2">{item.icon}</div>
+          <div className="text-xs font-medium" style={{ color: "var(--text-primary)" }}>{item.label}</div>
+        </motion.button>
+      ))}
+    </motion.div>
   );
 }
 
@@ -285,22 +298,36 @@ function BottomNav({ current }: { current: string }) {
   ];
 
   return (
-    <div
-      className="fixed bottom-0 left-0 right-0 z-50 px-5 py-3 flex justify-around"
-      style={{ background: "rgba(5,10,18,0.95)", borderTop: "1px solid var(--border-light)", backdropFilter: "blur(16px)" }}
+    <motion.div
+      initial={{ y: 100 }}
+      animate={{ y: 0 }}
+      transition={{ duration: 0.5 }}
+      className="fixed bottom-0 left-0 right-0 z-50 px-6 py-4"
+      style={{ background: "rgba(10, 10, 26, 0.9)", backdropFilter: "blur(20px)", borderTop: "1px solid var(--border-light)" }}
     >
-      {navItems.map((item) => (
-        <button
-          key={item.id}
-          onClick={() => router.push(item.path)}
-          className="flex flex-col items-center gap-0.5 transition-all"
-          style={{ color: current === item.id ? "var(--accent-pink)" : "var(--text-muted)" }}
-        >
-          <span className="text-lg">{item.icon}</span>
-          <span className="text-[10px] font-medium">{item.label}</span>
-        </button>
-      ))}
-    </div>
+      <div className="max-w-lg mx-auto flex justify-around">
+        {navItems.map((item) => (
+          <motion.button
+            key={item.id}
+            onClick={() => router.push(item.path)}
+            className="flex flex-col items-center gap-1 transition-all"
+            style={{ color: current === item.id ? "var(--accent-rose)" : "var(--text-muted)" }}
+            whileHover={{ scale: 1.1 }}
+            whileTap={{ scale: 0.9 }}
+          >
+            <span className="text-xl">{item.icon}</span>
+            <span className="text-[10px] font-medium">{item.label}</span>
+            {current === item.id && (
+              <motion.div
+                className="w-1 h-1 rounded-full"
+                style={{ background: "var(--accent-rose)" }}
+                layoutId="navIndicator"
+              />
+            )}
+          </motion.button>
+        ))}
+      </div>
+    </motion.div>
   );
 }
 
@@ -328,11 +355,7 @@ export default function HomePage() {
         if (data.progress && data.progress.length > 0) {
           const progressList = data.progress as CurrentProgress[];
           setAllProgress(progressList);
-
-          const currentSign = progressList[0]?.zodiac_sign;
-          if (currentSign) {
-            setCurrentProgress(progressList[0]);
-          }
+          setCurrentProgress(progressList[0]);
         } else {
           setCurrentProgress(null);
         }
@@ -368,25 +391,25 @@ export default function HomePage() {
 
   if (loading || dataLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center" style={{ background: "var(--bg-primary)" }}>
-        <div className="flex flex-col items-center gap-3">
-          <div className="flex gap-2">
-            <div className="w-2 h-2 rounded-full typing-dot" style={{ background: "var(--accent-pink)" }} />
-            <div className="w-2 h-2 rounded-full typing-dot" style={{ background: "var(--accent-pink)", animationDelay: "0.2s" }} />
-            <div className="w-2 h-2 rounded-full typing-dot" style={{ background: "var(--accent-pink)", animationDelay: "0.4s" }} />
+      <div className="min-h-screen flex items-center justify-center relative">
+        <StarryBackground starCount={50} particleCount={10} />
+        <div className="flex flex-col items-center gap-4">
+          <div className="flex gap-3">
+            <div className="w-3 h-3 rounded-full typing-dot" style={{ background: "var(--accent-rose)" }} />
+            <div className="w-3 h-3 rounded-full typing-dot" style={{ background: "var(--accent-rose)", animationDelay: "0.2s" }} />
+            <div className="w-3 h-3 rounded-full typing-dot" style={{ background: "var(--accent-rose)", animationDelay: "0.4s" }} />
           </div>
-          <p className="text-xs" style={{ color: "var(--text-secondary)" }}>加载中...</p>
+          <p className="text-sm" style={{ color: "var(--text-secondary)" }}>正在连接心动...</p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen relative" style={{ background: "var(--bg-primary)" }}>
-      <StarField />
-      <AuroraBackground />
+    <div className="min-h-screen relative" style={{ background: "var(--gradient-cosmic)" }}>
+      <StarryBackground starCount={80} particleCount={20} />
 
-      <div className="relative z-10 max-w-lg mx-auto px-4 pt-12 pb-24">
+      <div className="relative z-10 max-w-lg mx-auto px-5 pt-14 pb-28">
         <LogoSection />
 
         {currentProgress ? (
@@ -401,66 +424,84 @@ export default function HomePage() {
 
         <QuickActions onGallery={handleGoToGallery} />
 
-        {allProgress.length > 0 && allProgress.length > 1 && (
-          <div className="glass-card p-4 mb-6">
+        {allProgress.length > 1 && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ duration: 0.5 }}
+            className="glass-card p-4 mb-6"
+          >
             <h3 className="text-sm font-bold mb-3" style={{ color: "var(--text-primary)" }}>
               已攻略恋人 ({allProgress.filter(p => p.stage === "lover").length}/12)
             </h3>
-            <div className="flex gap-2 overflow-x-auto pb-1">
+            <div className="flex gap-3 overflow-x-auto pb-2">
               {allProgress.filter(p => p.stage === "lover").map((p) => {
                 const bf = BOYFRIENDS[p.zodiac_sign as ZodiacSign];
                 return (
-                  <button
+                  <motion.button
                     key={p.zodiac_sign}
                     onClick={() => router.push(`/chat?sign=${p.zodiac_sign}`)}
-                    className="flex-shrink-0 w-14 h-14 rounded-full overflow-hidden glow-border"
+                    className="flex-shrink-0 w-16 h-16 rounded-full overflow-hidden glow-border"
                     style={{ background: "var(--bg-primary)" }}
+                    whileHover={{ scale: 1.1, rotate: 5 }}
                   >
                     <img
                       src={getCharacterImage(p.zodiac_sign as ZodiacSign)}
                       alt={bf.name}
                       className="w-full h-full object-cover"
                     />
-                  </button>
+                  </motion.button>
                 );
               })}
             </div>
-          </div>
+          </motion.div>
         )}
 
-        <div className="glass-card p-4 mb-6">
-          <h3 className="text-sm font-bold mb-2" style={{ color: "var(--text-primary)" }}>
-            💡 收集进度
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5, delay: 0.3 }}
+          className="glass-card p-5 mb-6"
+        >
+          <h3 className="text-sm font-bold mb-3 flex items-center gap-2" style={{ color: "var(--text-primary)" }}>
+            <span>💡</span>
+            <span>收集进度</span>
           </h3>
-          <div className="flex gap-1.5">
+          <div className="flex gap-2">
             {Array.from({ length: 12 }).map((_, i) => {
               const sign = ["aries", "taurus", "gemini", "cancer", "leo", "virgo", "libra", "scorpio", "sagittarius", "capricorn", "aquarius", "pisces"][i] as ZodiacSign;
               const isCollected = allProgress.some(p => p.zodiac_sign === sign && p.stage === "lover");
               return (
-                <div
+                <motion.div
                   key={i}
-                  className="flex-1 h-6 rounded-full flex items-center justify-center text-xs"
+                  className="flex-1 h-8 rounded-lg flex items-center justify-center text-sm zodiac-icon"
                   style={{
-                    background: isCollected ? "var(--gradient-pink)" : "var(--bg-primary)",
-                    color: isCollected ? "white" : "var(--text-muted)",
-                    opacity: isCollected ? 1 : 0.5,
+                    background: isCollected ? "var(--gradient-rose)" : "var(--bg-primary)",
+                    color: isCollected ? "var(--bg-primary)" : "var(--text-muted)",
+                    opacity: isCollected ? 1 : 0.4,
                   }}
+                  whileHover={{ scale: 1.2, y: -2 }}
                 >
                   {getZodiacEmoji(sign)}
-                </div>
+                </motion.div>
               );
             })}
           </div>
-          <p className="text-xs text-center mt-2" style={{ color: "var(--text-secondary)" }}>
+          <p className="text-xs text-center mt-3" style={{ color: "var(--text-secondary)" }}>
             已收集 {allProgress.filter(p => p.stage === "lover").length}/12 位恋人
           </p>
-        </div>
+        </motion.div>
 
-        <div className="text-center py-4">
-          <p className="text-xs" style={{ color: "var(--text-muted)" }}>
-            心动宇宙 · 与你相遇
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 0.5, delay: 0.5 }}
+          className="text-center py-6"
+        >
+          <p className="text-xs tracking-widest" style={{ color: "var(--text-muted)" }}>
+            ✦ 心动宇宙 · 与你相遇 ✦
           </p>
-        </div>
+        </motion.div>
       </div>
 
       <BottomNav current="home" />
