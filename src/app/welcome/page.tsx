@@ -37,11 +37,8 @@ export default function WelcomePage() {
   const [showContent, setShowContent] = useState(false);
   const [selectedIndex, setSelectedIndex] = useState(0);
 
-  useEffect(() => {
-    if (!loading && !user) {
-      router.push("/login");
-    }
-  }, [user, loading, router]);
+  // 欢迎页面不需要登录，所有人都可以访问
+  // 登录检查移到点击"开始"按钮时
 
   useEffect(() => {
     const interval = setInterval(() => {
@@ -51,12 +48,18 @@ export default function WelcomePage() {
   }, []);
 
   const handleStart = () => {
-    router.push("/select");
+    // 点击开始时检查登录状态
+    if (!user) {
+      router.push("/login");
+    } else {
+      router.push("/select");
+    }
   };
 
   const currentImage = HERO_IMAGES[selectedIndex];
 
-  if (loading || !user) {
+  // 只在加载中显示loading，未登录也显示欢迎页面
+  if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center relative">
         <StarryBackground starCount={50} particleCount={10} />

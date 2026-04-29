@@ -42,9 +42,19 @@ export const GAME_IMAGES = {
   featureIcon3: "/images/characters/Taurus.png",
 };
 
+const SUPABASE_STORAGE_URL = process.env.NEXT_PUBLIC_SUPABASE_STORAGE_URL || "";
+
 export function getCharacterImage(sign: ZodiacSign): string {
   const key = `character${sign.charAt(0).toUpperCase() + sign.slice(1)}` as keyof typeof GAME_IMAGES;
-  return GAME_IMAGES[key] || GAME_IMAGES.logo;
+  const localPath = GAME_IMAGES[key] || GAME_IMAGES.logo;
+  
+  // 如果有 Supabase Storage URL，返回完整 URL
+  if (SUPABASE_STORAGE_URL) {
+    const filename = localPath.replace("/images/characters/", "");
+    return `${SUPABASE_STORAGE_URL}/${filename}`;
+  }
+  
+  return localPath;
 }
 
 export function getZodiacEmoji(sign: ZodiacSign): string {

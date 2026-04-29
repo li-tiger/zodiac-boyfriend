@@ -4,13 +4,19 @@ import { getCharacterImage } from "@/constants/images-game";
 const VOLCANO_API_URL = "https://ark.cn-beijing.volces.com/api/v3/images/generations";
 const API_KEY = process.env.VOLCANO_API_KEY;
 const MODEL = "doubao-seedream-5-0-260128";
-const APP_URL = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
+const SUPABASE_STORAGE_URL = process.env.NEXT_PUBLIC_SUPABASE_STORAGE_URL || "";
 
 function getFullImageUrl(localPath: string): string {
   if (localPath.startsWith("http://") || localPath.startsWith("https://")) {
     return localPath;
   }
-  return `${APP_URL}${localPath}`;
+  // 使用 Supabase Storage URL
+  if (SUPABASE_STORAGE_URL) {
+    // 移除 localPath 开头的 /images/characters/
+    const filename = localPath.replace("/images/characters/", "");
+    return `${SUPABASE_STORAGE_URL}/${filename}`;
+  }
+  return localPath;
 }
 
 export interface ImageGenerationResult {
