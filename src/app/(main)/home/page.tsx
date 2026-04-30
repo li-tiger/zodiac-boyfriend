@@ -4,7 +4,7 @@ import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/contexts/AuthContext";
 import { getCharacterImage, getZodiacEmoji } from "@/constants/images-game";
-import { BOYFRIENDS, ZODIAC_NAMES, RELATION_STAGE_CONFIG, type ZodiacSign, type RelationStage } from "@/constants";
+import { BOYFRIENDS, ZODIAC_NAMES, ZODIAC_SYMBOLS, ZODIAC_COLORS, RELATION_STAGE_CONFIG, type ZodiacSign, type RelationStage } from "@/constants";
 import type { Progress } from "@/types";
 import { motion } from "framer-motion";
 import StarryBackground from "@/components/StarryBackground";
@@ -16,6 +16,9 @@ interface CurrentProgress extends Progress {
 
 function LogoSection() {
   const [imgLoaded, setImgLoaded] = useState(false);
+  const logoUrl = process.env.NEXT_PUBLIC_SUPABASE_STORAGE_URL
+    ? `${process.env.NEXT_PUBLIC_SUPABASE_STORAGE_URL}/img.png`
+    : "/images/characters/img.png";
 
   return (
     <motion.div
@@ -25,25 +28,25 @@ function LogoSection() {
       className="flex flex-col items-center gap-4 mb-8"
     >
       <div
-        className="relative w-20 h-20 rounded-full overflow-hidden glow-border animate-glow-pulse"
+        className="relative w-20 h-20 lg:w-28 lg:h-28 rounded-full overflow-hidden glow-border animate-glow-pulse"
         style={{ background: "var(--bg-card)" }}
       >
         {!imgLoaded && (
           <div className="absolute inset-0 animate-shimmer" />
         )}
         <img
-          src="https://picsum.photos/seed/zodiac-logo/400/400"
+          src={logoUrl}
           alt="Logo"
           className="w-full h-full object-cover"
           onLoad={() => setImgLoaded(true)}
-          style={{ opacity: imgLoaded ? 1 : 0 }}
+          style={{ opacity: imgLoaded ? 1 : 0, objectPosition: "top center" }}
         />
       </div>
       <div className="text-center">
-        <h1 className="text-xl font-bold cosmic-title tracking-wide">
+        <h1 className="text-xl lg:text-3xl font-bold title-gradient tracking-wide font-display">
           12星座男友手账
         </h1>
-        <p className="text-sm mt-1" style={{ color: "var(--accent-moon)" }}>
+        <p className="text-sm lg:text-base mt-2 font-serif-sc" style={{ color: "var(--accent-moon)" }}>
           心动宇宙 · 遇见你的他
         </p>
       </div>
@@ -104,10 +107,10 @@ function CurrentBoyfriendCard({
     >
       <div className="absolute inset-0 bg-gradient-br from-[var(--accent-rose)]/10 to-transparent" />
 
-      <div className="relative z-10 p-6">
+      <div className="relative z-10 p-6 lg:p-8">
         <div className="flex items-center gap-5 mb-5">
           <motion.div
-            className="relative w-24 h-24 rounded-full overflow-hidden glow-border flex-shrink-0 card-inner-glow"
+            className="relative w-24 h-24 lg:w-32 lg:h-32 rounded-full overflow-hidden glow-border flex-shrink-0 card-inner-glow"
             style={{ background: "var(--bg-primary)" }}
             whileHover={{ scale: 1.05 }}
           >
@@ -119,29 +122,32 @@ function CurrentBoyfriendCard({
               alt={boyfriend.name}
               className="w-full h-full object-cover"
               onLoad={() => setImgLoaded(true)}
-              style={{ opacity: imgLoaded ? 1 : 0 }}
+              style={{ opacity: imgLoaded ? 1 : 0, objectPosition: "top center" }}
             />
           </motion.div>
 
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-2 mb-2">
-              <span className="text-2xl zodiac-icon">{getZodiacEmoji(progress.zodiac_sign as ZodiacSign)}</span>
-              <span className="text-sm font-medium px-2 py-0.5 rounded-full glass-card"
-                style={{ color: "var(--accent-moon)", borderColor: "var(--accent-moon)" }}>
+              <span className="text-2xl lg:text-3xl zodiac-icon"
+                style={{ color: ZODIAC_COLORS[progress.zodiac_sign as ZodiacSign] }}>
+                {ZODIAC_SYMBOLS[progress.zodiac_sign as ZodiacSign]}
+              </span>
+              <span className="text-sm lg:text-base font-medium px-2 py-0.5 rounded-full glass-card font-serif-sc"
+                style={{ color: ZODIAC_COLORS[progress.zodiac_sign as ZodiacSign], borderColor: ZODIAC_COLORS[progress.zodiac_sign as ZodiacSign] }}>
                 {ZODIAC_NAMES[progress.zodiac_sign as ZodiacSign]}
               </span>
             </div>
-            <h2 className="text-xl font-bold mb-1" style={{ color: "var(--text-primary)" }}>
+            <h2 className="text-xl lg:text-2xl font-bold mb-1 font-display" style={{ color: "var(--text-primary)" }}>
               {boyfriend.name}
             </h2>
-            <p className="text-sm" style={{ color: "var(--accent-rose)" }}>
+            <p className="text-sm lg:text-base font-serif-sc" style={{ color: ZODIAC_COLORS[progress.zodiac_sign as ZodiacSign] }}>
               {stageConfig.label}
             </p>
           </div>
 
           <motion.button
             onClick={onChange}
-            className="px-4 py-2 rounded-full text-sm glass-card-hover"
+            className="px-4 py-2 lg:px-6 lg:py-2.5 rounded-full text-sm lg:text-base glass-card-hover"
             style={{ border: "1px solid var(--border-light)", color: "var(--text-secondary)" }}
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
@@ -150,21 +156,21 @@ function CurrentBoyfriendCard({
           </motion.button>
         </div>
 
-        <p className="text-sm mb-5 italic" style={{ color: "var(--text-secondary)" }}>
+        <p className="text-sm lg:text-base mb-5 italic font-serif-sc" style={{ color: "var(--text-secondary)" }}>
           "{statusText}"
         </p>
 
         <div className="mb-5">
           <div className="flex justify-between items-center mb-2">
-            <span className="text-xs font-medium" style={{ color: "var(--text-secondary)" }}>
+            <span className="text-xs lg:text-sm font-medium" style={{ color: "var(--text-secondary)" }}>
               心动进度
             </span>
-            <span className="text-xs px-2 py-0.5 rounded-full glass-card" style={{ color: "var(--accent-rose)" }}>
+            <span className="text-xs lg:text-sm px-2 py-0.5 rounded-full glass-card" style={{ color: "var(--accent-rose)" }}>
               {stageConfig.label} · {progressPercentage}%
             </span>
           </div>
 
-          <div className="h-3 rounded-full overflow-hidden glass-card" style={{ background: "var(--bg-primary)" }}>
+          <div className="h-3 lg:h-4 rounded-full overflow-hidden glass-card" style={{ background: "var(--bg-primary)" }}>
             <motion.div
               className="h-full rounded-full"
               style={{
@@ -181,7 +187,7 @@ function CurrentBoyfriendCard({
             {sortedThresholds.map((threshold, index) => (
               <div
                 key={threshold.stage}
-                className={`text-[10px] ${progressPercentage >= threshold.threshold ? "opacity-100" : "opacity-40"}`}
+                className={`text-[10px] lg:text-xs ${progressPercentage >= threshold.threshold ? "opacity-100" : "opacity-40"}`}
                 style={{ color: progressPercentage >= threshold.threshold ? "var(--accent-rose)" : "var(--text-muted)" }}
               >
                 {RELATION_STAGE_CONFIG[threshold.stage as RelationStage].label}
@@ -192,7 +198,7 @@ function CurrentBoyfriendCard({
 
         <motion.button
           onClick={onChat}
-          className="w-full py-4 rounded-2xl text-sm font-semibold text-white flex items-center justify-center gap-2"
+          className="w-full py-4 lg:py-5 rounded-2xl text-sm lg:text-base font-semibold text-white flex items-center justify-center gap-2"
           style={{ background: "var(--gradient-rose)", boxShadow: "0 4px 25px var(--glow-rose)" }}
           whileHover={{ scale: 1.02, boxShadow: "0 8px 35px var(--glow-rose)" }}
           whileTap={{ scale: 0.98 }}
@@ -236,10 +242,10 @@ function NoBoyfriendCard({ onSelect }: { onSelect: () => void }) {
           />
         </motion.div>
 
-        <h2 className="text-lg font-bold mb-2 cosmic-title">
+        <h2 className="text-lg font-bold mb-2 title-gradient font-display">
           选择你的心动男友
         </h2>
-        <p className="text-sm mb-6" style={{ color: "var(--text-secondary)" }}>
+        <p className="text-sm mb-6 font-serif-sc" style={{ color: "var(--text-secondary)" }}>
           12位星座男友等待着与你相遇
         </p>
 
@@ -305,7 +311,7 @@ function BottomNav({ current }: { current: string }) {
       className="fixed bottom-0 left-0 right-0 z-50 px-6 py-4"
       style={{ background: "rgba(10, 10, 26, 0.9)", backdropFilter: "blur(20px)", borderTop: "1px solid var(--border-light)" }}
     >
-      <div className="max-w-lg mx-auto flex justify-around">
+      <div className="flex justify-around">
         {navItems.map((item) => (
           <motion.button
             key={item.id}
@@ -409,7 +415,7 @@ export default function HomePage() {
     <div className="min-h-screen relative" style={{ background: "var(--gradient-cosmic)" }}>
       <StarryBackground starCount={80} particleCount={20} />
 
-      <div className="relative z-10 max-w-lg mx-auto px-5 pt-14 pb-28">
+      <div className="relative z-10 px-4 lg:px-12 pt-14 pb-28">
         <LogoSection />
 
         {currentProgress ? (

@@ -1,19 +1,23 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/contexts/AuthContext";
 import { motion } from "framer-motion";
+import { Turnstile } from "react-turnstile";
 import StarryBackground from "@/components/StarryBackground";
 
 export default function RegisterPage() {
   const { user, register, loading: authLoading } = useAuth();
   const router = useRouter();
   const [username, setUsername] = useState("");
+  const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  const [turnstileToken, setTurnstileToken] = useState<string>("");
+  const [turnstileKey, setTurnstileKey] = useState(0);
 
   useEffect(() => {
     if (!authLoading && user) {
@@ -21,9 +25,21 @@ export default function RegisterPage() {
     }
   }, [user, authLoading, router]);
 
-  const handleRegister = async (e: React.FormEvent) => {
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+  const handleRegister = useCallback(async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
+
+    if (!turnstileToken) {
+      setError("请完成人机验证");
+      return;
+    }
+
+    if (!email || !emailRegex.test(email)) {
+      setError("请输入有效的邮箱地址");
+      return;
+    }
 
     if (password !== confirmPassword) {
       setError("两次密码输入不一致");
@@ -38,14 +54,18 @@ export default function RegisterPage() {
     setLoading(true);
 
     try {
-      await register(username, password);
+      await register(username, email, password, turnstileToken);
+      setTurnstileKey(k => k + 1);
+      setTurnstileToken("");
       router.push("/home");
     } catch (err) {
       setError(err instanceof Error ? err.message : "注册失败");
+      setTurnstileKey(k => k + 1);
+      setTurnstileToken("");
     } finally {
       setLoading(false);
     }
-  };
+  }, [username, email, password, confirmPassword, turnstileToken, register, router]);
 
   if (authLoading) {
     return (
@@ -147,6 +167,31 @@ export default function RegisterPage() {
             <motion.div
               initial={{ opacity: 0, x: -20 }}
               animate={{ opacity: 1, x: 0 }}
+              transition={{ delay: 0.35 }}
+            >
+              <label className="block text-xs mb-2" style={{ color: "var(--text-secondary)" }}>
+                邮箱
+              </label>
+              <motion.input
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder="请输入邮箱地址"
+                required
+                className="w-full px-4 py-3 rounded-xl text-sm"
+                whileFocus={{ scale: 1.01 }}
+                style={{
+                  background: "var(--bg-card)",
+                  border: "1px solid var(--border-cosmic)",
+                  color: "var(--text-primary)",
+                  outline: "none"
+                }}
+              />
+            </motion.div>
+
+            <motion.div
+              initial={{ opacity: 0, x: -20 }}
+              animate={{ opacity: 1, x: 0 }}
               transition={{ delay: 0.4 }}
             >
               <label className="block text-xs mb-2" style={{ color: "var(--text-secondary)" }}>
@@ -191,6 +236,22 @@ export default function RegisterPage() {
                   color: "var(--text-primary)",
                   outline: "none"
                 }}
+              />
+            </motion.div>
+
+            <motion.div
+              initial={{ opacity: 0, x: -20 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ delay: 0.5 }}
+              className="flex justify-center"
+            >
+              <Turnstile
+                key={turnstileKey}
+                sitekey={process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY || ""}
+                onVerify={(token) => setTurnstileToken(token)}
+                onExpire={() => setTurnstileToken("")}
+                onError={() => setTurnstileToken("")}
+                theme="dark"
               />
             </motion.div>
 

@@ -4,7 +4,7 @@ import React, { useState, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/contexts/AuthContext";
 import { motion, AnimatePresence } from "framer-motion";
-import { BOYFRIENDS, ZODIAC_NAMES, ZODIAC_SIGNS, RELATION_STAGE_LABELS, type ZodiacSign, type RelationStage } from "@/constants";
+import { BOYFRIENDS, ZODIAC_NAMES, ZODIAC_SIGNS, ZODIAC_SYMBOLS, ZODIAC_COLORS, RELATION_STAGE_LABELS, type ZodiacSign, type RelationStage } from "@/constants";
 import StarryBackground from "@/components/StarryBackground";
 import { getCharacterImage, getZodiacEmoji } from "@/constants/images-game";
 
@@ -164,7 +164,7 @@ export default function SelectPage() {
     <div className="min-h-screen relative" style={{ background: "var(--gradient-cosmic)" }}>
       <StarryBackground starCount={100} particleCount={25} />
 
-      <div className="relative z-10 max-w-lg mx-auto px-4 pt-12 pb-24">
+      <div className="relative z-10 px-4 lg:px-12 pt-12 pb-24">
         <motion.div
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -172,9 +172,8 @@ export default function SelectPage() {
           className="text-center mb-8"
         >
           <motion.h1
-            className="text-2xl font-bold mb-2"
+            className="text-2xl lg:text-3xl font-bold mb-2 font-display title-gradient"
             style={{
-              color: "var(--text-primary)",
               textShadow: "0 0 30px var(--glow-rose)"
             }}
             animate={{ textShadow: ["0 0 20px var(--glow-rose)", "0 0 40px var(--glow-rose)", "0 0 20px var(--glow-rose)"] }}
@@ -182,7 +181,7 @@ export default function SelectPage() {
           >
             探索心动宇宙
           </motion.h1>
-          <p className="text-sm" style={{ color: "var(--text-secondary)" }}>
+          <p className="text-sm font-serif-sc" style={{ color: "var(--text-secondary)" }}>
             十二星座，十二种心动可能
           </p>
         </motion.div>
@@ -191,7 +190,7 @@ export default function SelectPage() {
           variants={containerVariants}
           initial="hidden"
           animate="visible"
-          className="grid grid-cols-3 gap-3"
+          className="grid grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-3"
         >
           {ZODIAC_SIGNS.map((sign) => {
             const bf = BOYFRIENDS[sign];
@@ -209,10 +208,10 @@ export default function SelectPage() {
                 onHoverStart={() => setHoveredSign(sign)}
                 onHoverEnd={() => setHoveredSign(null)}
                 onClick={() => setSelectedSign(sign)}
-                className="relative p-3 rounded-2xl border"
+                className="relative p-3 rounded-2xl border glass-card-enhanced"
                 style={{
                   borderColor: isSelected
-                    ? "var(--accent-rose)"
+                    ? ZODIAC_COLORS[sign]
                     : hasProgress
                     ? "var(--accent-gold)"
                     : "var(--border-cosmic)",
@@ -220,9 +219,9 @@ export default function SelectPage() {
                     ? "var(--bg-card-hover)"
                     : "var(--bg-card)",
                   boxShadow: isSelected
-                    ? "0 0 20px var(--glow-rose)"
+                    ? `0 0 20px ${ZODIAC_COLORS[sign]}66`
                     : isHovered
-                    ? "0 0 15px var(--glow-silver)"
+                    ? `0 0 15px ${ZODIAC_COLORS[sign]}44`
                     : "none"
                 }}
               >
@@ -297,14 +296,14 @@ export default function SelectPage() {
                 </div>
 
                 {/* 文字区域 */}
-                <div className="text-center">
+                <div className="text-center" style={{ minHeight: "42px" }}>
                   <div className="flex items-center justify-center gap-1 mb-0.5">
-                    <span className="text-sm">{getZodiacEmoji(sign)}</span>
-                    <p className="text-xs font-medium" style={{ color: "var(--text-primary)" }}>
+                    <span className="text-base" style={{ color: ZODIAC_COLORS[sign] }}>{ZODIAC_SYMBOLS[sign]}</span>
+                    <p className="text-sm font-bold font-serif-sc" style={{ color: "var(--text-primary)" }}>
                       {ZODIAC_NAMES[sign]}
                     </p>
                   </div>
-                  <p className="text-[11px] font-medium truncate" style={{ color: "var(--text-secondary)" }}>
+                  <p className="text-sm font-bold truncate font-display" style={{ color: ZODIAC_COLORS[sign], textShadow: `0 0 8px ${ZODIAC_COLORS[sign]}66` }}>
                     {bf.name}
                   </p>
                 </div>
@@ -348,8 +347,8 @@ export default function SelectPage() {
                 </motion.div>
                 <div className="flex-1">
                   <div className="flex items-center gap-2 mb-1.5">
-                    <span className="text-xl">{getZodiacEmoji(displaySign)}</span>
-                    <h3 className="text-base font-bold" style={{ color: "var(--text-primary)" }}>
+                    <span className="text-xl" style={{ color: ZODIAC_COLORS[displaySign] }}>{ZODIAC_SYMBOLS[displaySign]}</span>
+                    <h3 className="text-base font-bold font-display" style={{ color: "var(--text-primary)" }}>
                       {BOYFRIENDS[displaySign].name}
                     </h3>
                     {displayProgress?.stage === "lover" && (
@@ -362,7 +361,7 @@ export default function SelectPage() {
                       </motion.span>
                     )}
                   </div>
-                  <p className="text-xs mb-1" style={{ color: "var(--accent-rose)" }}>
+                  <p className="text-xs mb-1 font-serif-sc" style={{ color: ZODIAC_COLORS[displaySign] }}>
                     {BOYFRIENDS[displaySign].personality}
                   </p>
                   {displayProgress && (
@@ -391,7 +390,7 @@ export default function SelectPage() {
                 </div>
               </div>
 
-              <p className="text-xs leading-relaxed mb-4" style={{ color: "var(--text-secondary)" }}>
+              <p className="text-xs leading-relaxed mb-4 font-serif-sc" style={{ color: "var(--text-secondary)" }}>
                 {BOYFRIENDS[displaySign].introduction}
               </p>
 
@@ -462,10 +461,7 @@ export default function SelectPage() {
         </motion.div>
       </div>
 
-      <motion.div
-        initial={{ y: 100 }}
-        animate={{ y: 0 }}
-        transition={{ type: "spring", stiffness: 200, damping: 25 }}
+      <div
         className="fixed bottom-0 left-0 right-0 z-50 px-5 py-3"
         style={{
           background: "rgba(10, 10, 26, 0.85)",
@@ -474,10 +470,9 @@ export default function SelectPage() {
           boxShadow: "0 -4px 30px rgba(0, 0, 0, 0.3)"
         }}
       >
-        <div className="max-w-lg mx-auto flex justify-around">
+        <div className="flex justify-around">
           <motion.button
             onClick={() => router.push("/home")}
-            whileHover={{ scale: 1.1 }}
             whileTap={{ scale: 0.95 }}
             className="flex flex-col items-center gap-0.5 py-1 px-4"
             style={{ color: "var(--text-muted)" }}
@@ -487,23 +482,19 @@ export default function SelectPage() {
           </motion.button>
           <motion.button
             onClick={() => router.push("/select")}
-            whileHover={{ scale: 1.1 }}
             whileTap={{ scale: 0.95 }}
             className="flex flex-col items-center gap-0.5 py-1 px-4 relative"
             style={{ color: "var(--accent-rose)" }}
           >
             <span className="text-lg">✨</span>
             <span className="text-[10px] font-medium">选择</span>
-            <motion.div
+            <div
               className="absolute -bottom-1 left-1/2 -translate-x-1/2 w-6 h-0.5 rounded-full"
               style={{ background: "var(--gradient-pink)" }}
-              animate={{ scale: [1, 1.5, 1] }}
-              transition={{ duration: 2, repeat: Infinity }}
             />
           </motion.button>
           <motion.button
             onClick={() => router.push("/gallery")}
-            whileHover={{ scale: 1.1 }}
             whileTap={{ scale: 0.95 }}
             className="flex flex-col items-center gap-0.5 py-1 px-4"
             style={{ color: "var(--text-muted)" }}
@@ -512,7 +503,7 @@ export default function SelectPage() {
             <span className="text-[10px]">手账</span>
           </motion.button>
         </div>
-      </motion.div>
+      </div>
     </div>
   );
 }

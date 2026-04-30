@@ -8,6 +8,7 @@ import { BOYFRIENDS, ZODIAC_NAMES, type ZodiacSign } from "@/constants/boyfriend
 import { RELATION_STAGE_LABELS } from "@/constants";
 import type { RelationStage } from "@/types";
 import StarryBackground from "@/components/StarryBackground";
+import { getCharacterImage } from "@/constants/images-game";
 
 interface ProgressItem {
   zodiac_sign: string;
@@ -142,7 +143,7 @@ export default function GalleryPage() {
     <div className="min-h-screen relative" style={{ background: "var(--gradient-cosmic)" }}>
       <StarryBackground starCount={100} particleCount={25} />
 
-      <div className="relative z-10 max-w-lg mx-auto px-4 pt-12 pb-24">
+      <div className="relative z-10 px-4 lg:px-12 pt-12 pb-24">
         <motion.div
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -249,7 +250,7 @@ export default function GalleryPage() {
                     layout
                   >
                     <motion.div
-                      className="w-12 h-12 rounded-full flex items-center justify-center"
+                      className="w-14 h-14 rounded-full overflow-hidden flex-shrink-0"
                       style={{
                         background: "var(--bg-primary)",
                         boxShadow: isLover ? "0 0 15px var(--glow-pink)" : "0 0 10px var(--glow-silver)"
@@ -261,7 +262,11 @@ export default function GalleryPage() {
                       }}
                       transition={{ duration: 2, repeat: Infinity }}
                     >
-                      <span className="text-2xl">{bf.emoji}</span>
+                      <img
+                        src={getCharacterImage(p.zodiac_sign as ZodiacSign)}
+                        alt={bf.name}
+                        className="w-full h-full object-cover object-top"
+                      />
                     </motion.div>
 
                     <div className="flex-1 min-w-0">
@@ -455,7 +460,7 @@ export default function GalleryPage() {
           boxShadow: "0 -4px 30px rgba(0, 0, 0, 0.3)"
         }}
       >
-        <div className="max-w-lg mx-auto flex justify-around">
+        <div className="flex justify-around">
           <motion.button
             onClick={() => router.push("/home")}
             whileHover={{ scale: 1.1 }}

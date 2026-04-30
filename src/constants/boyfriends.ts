@@ -16,6 +16,84 @@ export const ZODIAC_NAMES: Record<ZodiacSign, string> = {
   pisces: "双鱼座",
 };
 
+// 星座符号
+export const ZODIAC_SYMBOLS: Record<ZodiacSign, string> = {
+  aries: "♈",
+  taurus: "♉",
+  gemini: "♊",
+  cancer: "♋",
+  leo: "♌",
+  virgo: "♍",
+  libra: "♎",
+  scorpio: "♏",
+  sagittarius: "♐",
+  capricorn: "♑",
+  aquarius: "♒",
+  pisces: "♓",
+};
+
+// 星座主题色
+export const ZODIAC_COLORS: Record<ZodiacSign, string> = {
+  aries: "#e74c3c",
+  taurus: "#27ae60",
+  gemini: "#f39c12",
+  cancer: "#5dade2",
+  leo: "#e67e22",
+  virgo: "#8e44ad",
+  libra: "#ec7063",
+  scorpio: "#1a5276",
+  sagittarius: "#d35400",
+  capricorn: "#5d6d7e",
+  aquarius: "#3498db",
+  pisces: "#af7ac5",
+};
+
+// 星座CSS类名
+export const ZODIAC_COLOR_CLASSES: Record<ZodiacSign, string> = {
+  aries: "zodiac-color-aries",
+  taurus: "zodiac-color-taurus",
+  gemini: "zodiac-color-gemini",
+  cancer: "zodiac-color-cancer",
+  leo: "zodiac-color-leo",
+  virgo: "zodiac-color-virgo",
+  libra: "zodiac-color-libra",
+  scorpio: "zodiac-color-scorpio",
+  sagittarius: "zodiac-color-sagittarius",
+  capricorn: "zodiac-color-capricorn",
+  aquarius: "zodiac-color-aquarius",
+  pisces: "zodiac-color-pisces",
+};
+
+export const ZODIAC_BG_CLASSES: Record<ZodiacSign, string> = {
+  aries: "zodiac-bg-aries",
+  taurus: "zodiac-bg-taurus",
+  gemini: "zodiac-bg-gemini",
+  cancer: "zodiac-bg-cancer",
+  leo: "zodiac-bg-leo",
+  virgo: "zodiac-bg-virgo",
+  libra: "zodiac-bg-libra",
+  scorpio: "zodiac-bg-scorpio",
+  sagittarius: "zodiac-bg-sagittarius",
+  capricorn: "zodiac-bg-capricorn",
+  aquarius: "zodiac-bg-aquarius",
+  pisces: "zodiac-bg-pisces",
+};
+
+export const ZODIAC_GLOW_CLASSES: Record<ZodiacSign, string> = {
+  aries: "zodiac-glow-aries",
+  taurus: "zodiac-glow-taurus",
+  gemini: "zodiac-glow-gemini",
+  cancer: "zodiac-glow-cancer",
+  leo: "zodiac-glow-leo",
+  virgo: "zodiac-glow-virgo",
+  libra: "zodiac-glow-libra",
+  scorpio: "zodiac-glow-scorpio",
+  sagittarius: "zodiac-glow-sagittarius",
+  capricorn: "zodiac-glow-capricorn",
+  aquarius: "zodiac-glow-aquarius",
+  pisces: "zodiac-glow-pisces",
+};
+
 export const ZODIAC_SIGNS: ZodiacSign[] = [
   "aries",
   "taurus",

@@ -4,7 +4,7 @@ import React, { useState, useEffect, useRef, useCallback, Suspense } from "react
 import { useRouter, useSearchParams } from "next/navigation";
 import { useAuth } from "@/contexts/AuthContext";
 import { motion, AnimatePresence } from "framer-motion";
-import { BOYFRIENDS, RELATION_STAGE_LABELS, type ZodiacSign, type RelationStage } from "@/constants";
+import { BOYFRIENDS, RELATION_STAGE_LABELS, RELATION_STAGE_CONFIG, ZODIAC_SYMBOLS, ZODIAC_COLORS, type ZodiacSign, type RelationStage } from "@/constants";
 import StarryBackground from "@/components/StarryBackground";
 import { getCharacterImage } from "@/constants/images-game";
 
@@ -56,6 +56,110 @@ const notificationVariants = {
   exit: { opacity: 0, y: -20, scale: 0.8, transition: { duration: 0.2 } }
 };
 
+interface SidebarProps {
+  sign: ZodiacSign;
+  stage: RelationStage;
+  progressValue: number;
+  boyfriend: typeof BOYFRIENDS[ZodiacSign];
+}
+
+function Sidebar({ sign, stage, progressValue, boyfriend }: SidebarProps) {
+  return (
+    <div
+      className="hidden lg:flex w-72 flex-col p-6 border-l"
+      style={{
+        background: "rgba(10, 10, 26, 0.85)",
+        borderColor: "var(--border-cosmic)",
+        backdropFilter: "blur(20px)"
+      }}
+    >
+      <div className="flex flex-col items-center mb-6">
+        <div
+          className="w-24 h-24 rounded-full overflow-hidden mb-3"
+          style={{ boxShadow: `0 0 25px ${ZODIAC_COLORS[sign]}66` }}
+        >
+          <img
+            src={getCharacterImage(sign)}
+            alt={boyfriend.name}
+            className="w-full h-full object-cover"
+            style={{ objectPosition: "top center" }}
+          />
+        </div>
+        <div className="flex items-center gap-2 mb-1">
+          <span className="text-lg" style={{ color: ZODIAC_COLORS[sign] }}>{ZODIAC_SYMBOLS[sign]}</span>
+          <h2 className="text-lg font-bold font-display" style={{ color: "var(--text-primary)" }}>
+            {boyfriend.name}
+          </h2>
+        </div>
+        <p className="text-sm font-serif-sc" style={{ color: ZODIAC_COLORS[sign] }}>
+          {RELATION_STAGE_LABELS[stage]}
+        </p>
+      </div>
+
+      <div className="mb-6">
+        <div className="flex justify-between items-center mb-2">
+          <span className="text-xs" style={{ color: "var(--text-secondary)" }}>心动进度</span>
+          <span className="text-xs font-medium px-2 py-0.5 rounded-full" style={{ color: "var(--accent-rose)", background: "var(--bg-primary)" }}>
+            {progressValue}%
+          </span>
+        </div>
+        <div className="h-3 rounded-full overflow-hidden" style={{ background: "var(--bg-primary)" }}>
+          <motion.div
+            className="h-full rounded-full"
+            style={{
+              background: stage === "lover" ? "var(--gradient-pink)" : "var(--gradient-gold)",
+              boxShadow: stage === "lover" ? "0 0 10px var(--glow-pink)" : "0 0 8px var(--glow-gold)"
+            }}
+            initial={{ width: 0 }}
+            animate={{ width: `${progressValue}%` }}
+            transition={{ duration: 0.8 }}
+          />
+        </div>
+      </div>
+
+      <div className="mb-6">
+        <h3 className="text-xs font-medium mb-3" style={{ color: "var(--text-secondary)" }}>关系阶段</h3>
+        <div className="space-y-2">
+          {(["stranger", "ambiguous", "crush", "lover"] as RelationStage[]).map((s, idx) => {
+            const config = RELATION_STAGE_CONFIG[s];
+            const isActive = stage === s;
+            const isPast = progressValue >= config.progressThreshold;
+            return (
+              <div key={s} className="flex items-center gap-2">
+                <div
+                  className="w-6 h-6 rounded-full flex items-center justify-center text-xs"
+                  style={{
+                    background: isActive ? "var(--gradient-rose)" : isPast ? "var(--bg-primary)" : "transparent",
+                    border: isActive ? "none" : "1px solid var(--border-cosmic)",
+                    color: isActive || isPast ? "white" : "var(--text-muted)"
+                  }}
+                >
+                  {idx + 1}
+                </div>
+                <span
+                  className="text-xs"
+                  style={{ color: isActive ? "var(--accent-rose)" : isPast ? "var(--text-secondary)" : "var(--text-muted)" }}
+                >
+                  {config.label}
+                </span>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+
+      <div className="flex-1">
+        <h3 className="text-xs font-medium mb-3 font-serif-sc" style={{ color: "var(--text-secondary)" }}>关于{boyfriend.name}</h3>
+        <div className="space-y-2 text-xs font-serif-sc" style={{ color: "var(--text-muted)" }}>
+          <p><span style={{ color: ZODIAC_COLORS[sign] }}>职业：</span>{boyfriend.occupation}</p>
+          <p><span style={{ color: ZODIAC_COLORS[sign] }}>性格：</span>{boyfriend.personality}</p>
+          <p><span style={{ color: ZODIAC_COLORS[sign] }}>聊天风格：</span>{boyfriend.chatStyle}</p>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 function ChatContent() {
   const { user, loading: authLoading } = useAuth();
   const router = useRouter();
@@ -74,6 +178,7 @@ function ChatContent() {
   const [unlockedOccupation, setUnlockedOccupation] = useState("");
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const pollingRefs = useRef<Map<string, NodeJS.Timeout>>(new Map());
+  const [enlargedImage, setEnlargedImage] = useState<string | null>(null);
 
   const boyfriend = sign ? BOYFRIENDS[sign] : null;
 
@@ -210,6 +315,17 @@ function ChatContent() {
       pollingRefs.current.forEach((timeout) => clearTimeout(timeout));
       pollingRefs.current.clear();
     };
+  }, []);
+
+  // ESC 键关闭大图
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") {
+        setEnlargedImage(null);
+      }
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
   }, []);
 
   const handleSend = async () => {
@@ -372,19 +488,17 @@ function ChatContent() {
             src={getCharacterImage(sign!)}
             alt={boyfriend.name}
             className="w-full h-full object-cover"
+            style={{ objectPosition: "top center" }}
           />
         </motion.div>
 
         <div className="flex-1">
-          <motion.h1
+          <h1
             className="text-sm font-bold"
             style={{ color: "var(--text-primary)" }}
-            key={currentCallName}
-            initial={{ opacity: 0, x: -10 }}
-            animate={{ opacity: 1, x: 0 }}
           >
             {currentCallName || boyfriend.name}
-          </motion.h1>
+          </h1>
           <p className="text-[10px]" style={{ color: "var(--accent-rose)" }}>
             {RELATION_STAGE_LABELS[stage]}
           </p>
@@ -412,8 +526,13 @@ function ChatContent() {
         </div>
       </motion.header>
 
-      <div className="flex-1 overflow-y-auto px-4 py-4 space-y-4">
-        {messages.length === 0 && (
+      {/* 消息区域和侧边栏 */}
+      <div className="flex flex-1 overflow-hidden">
+        {/* 左侧：消息区域 */}
+        <div className="flex flex-col flex-1 overflow-hidden">
+          {/* 消息滚动区域 */}
+          <div className="flex-1 overflow-y-auto px-4 py-4 space-y-4">
+          {messages.length === 0 && (
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -429,6 +548,7 @@ function ChatContent() {
                 src={getCharacterImage(sign!)}
                 alt={boyfriend.name}
                 className="w-full h-full object-cover"
+                style={{ objectPosition: "top center" }}
               />
             </motion.div>
             <p className="text-base mb-2" style={{ color: "var(--text-primary)" }}>
@@ -485,6 +605,7 @@ function ChatContent() {
                   src={getCharacterImage(sign!)}
                   alt={boyfriend.name}
                   className="w-full h-full object-cover"
+                  style={{ objectPosition: "top center" }}
                 />
               </motion.div>
             )}
@@ -518,19 +639,28 @@ function ChatContent() {
               <motion.div
                 initial={{ opacity: 0, scale: 0.8 }}
                 animate={{ opacity: 1, scale: 1 }}
-                className="max-w-[65%] mb-2 rounded-xl overflow-hidden"
+                className="max-w-[65%] mb-2 rounded-xl overflow-hidden cursor-pointer group relative"
                 style={{
                   background: "var(--bg-card)",
                   border: "1px solid var(--border-cosmic)",
-                  boxShadow: "0 4px 20px rgba(0, 0, 0, 0.3)"
+                  boxShadow: "0 4px 20px rgba(0, 0, 0, 0.3)",
+                  aspectRatio: "3/4",
+                  width: "180px"
                 }}
+                onClick={() => setEnlargedImage(msg.imageUrl!)}
               >
                 <img
                   src={msg.imageUrl}
                   alt="场景图片"
-                  className="w-full h-auto object-cover"
-                  style={{ maxHeight: "200px" }}
+                  className="w-full h-full object-cover"
                 />
+                {/* 悬停提示 */}
+                <div
+                  className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+                  style={{ background: "rgba(0, 0, 0, 0.5)" }}
+                >
+                  <span className="text-xs text-white">点击放大</span>
+                </div>
               </motion.div>
             )}
 
@@ -593,6 +723,7 @@ function ChatContent() {
                 src={getCharacterImage(sign!)}
                 alt={boyfriend.name}
                 className="w-full h-full object-cover"
+                style={{ objectPosition: "top center" }}
               />
             </div>
             <div
@@ -617,28 +748,69 @@ function ChatContent() {
         )}
 
         <div ref={messagesEndRef} />
+          </div>
+
+          {/* 移动端输入框（在左侧区域内） */}
+          <div className="lg:hidden px-4 py-3 border-t" style={{
+            background: "rgba(10, 10, 26, 0.85)",
+            borderColor: "var(--border-cosmic)",
+            backdropFilter: "blur(20px)",
+            boxShadow: "0 -4px 30px rgba(0, 0, 0, 0.3)"
+          }}>
+            <div className="flex gap-3 max-w-3xl mx-auto">
+              <motion.input
+                type="text"
+                value={input}
+                onChange={(e) => setInput(e.target.value)}
+                onKeyDown={(e) => e.key === "Enter" && handleSend()}
+                placeholder={`给${boyfriend.name}发消息...`}
+                className="flex-1 px-4 py-2.5 rounded-full text-sm"
+                disabled={isSending}
+                whileFocus={{ scale: 1.01 }}
+                style={{
+                  background: "var(--bg-card)",
+                  border: "1px solid var(--border-cosmic)",
+                  color: "var(--text-primary)",
+                  outline: "none"
+                }}
+              />
+              <motion.button
+                onClick={handleSend}
+                disabled={!input.trim() || isSending}
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                className="px-5 py-2.5 rounded-full text-sm font-medium text-white disabled:opacity-50"
+                style={{
+                  background: "var(--gradient-cosmic)",
+                  border: "1px solid var(--accent-rose)",
+                  boxShadow: "0 4px 20px var(--glow-rose)"
+                }}
+              >
+                ✦
+              </motion.button>
+            </div>
+          </div>
+        </div>
+
+        {/* PC端侧边栏 */}
+        <Sidebar sign={sign!} stage={stage} progressValue={progressValue} boyfriend={boyfriend} />
       </div>
 
-      <motion.div
-        initial={{ y: 50 }}
-        animate={{ y: 0 }}
-        transition={{ type: "spring", stiffness: 200, damping: 25 }}
-        className="px-4 py-3 border-t"
-        style={{
-          background: "rgba(10, 10, 26, 0.85)",
-          borderColor: "var(--border-cosmic)",
-          backdropFilter: "blur(20px)",
-          boxShadow: "0 -4px 30px rgba(0, 0, 0, 0.3)"
-        }}
-      >
-        <div className="flex gap-3">
+      {/* PC端输入框（在底部，占满全宽） */}
+      <div className="hidden lg:block px-4 py-3 border-t" style={{
+        background: "rgba(10, 10, 26, 0.85)",
+        borderColor: "var(--border-cosmic)",
+        backdropFilter: "blur(20px)",
+        boxShadow: "0 -4px 30px rgba(0, 0, 0, 0.3)"
+      }}>
+        <div className="flex gap-3 max-w-3xl mx-auto">
           <motion.input
             type="text"
             value={input}
             onChange={(e) => setInput(e.target.value)}
             onKeyDown={(e) => e.key === "Enter" && handleSend()}
             placeholder={`给${boyfriend.name}发消息...`}
-            className="flex-1 px-4 py-2.5 rounded-full text-sm"
+            className="flex-1 px-4 py-2.5 rounded-full text-base"
             disabled={isSending}
             whileFocus={{ scale: 1.01 }}
             style={{
@@ -663,7 +835,54 @@ function ChatContent() {
             ✦
           </motion.button>
         </div>
-      </motion.div>
+      </div>
+
+      {/* 大图模态框 */}
+      <AnimatePresence>
+        {enlargedImage && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 flex items-center justify-center"
+            style={{ background: "rgba(0, 0, 0, 0.85)" }}
+            onClick={() => setEnlargedImage(null)}
+          >
+            <motion.div
+              initial={{ scale: 0.8, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.8, opacity: 0 }}
+              transition={{ type: "spring", stiffness: 300, damping: 25 }}
+              className="relative"
+              onClick={(e) => e.stopPropagation()}
+            >
+              {/* 关闭按钮 */}
+              <motion.button
+                className="absolute -top-12 right-0 w-8 h-8 rounded-full flex items-center justify-center text-white"
+                style={{ background: "var(--bg-card)" }}
+                whileHover={{ scale: 1.1 }}
+                whileTap={{ scale: 0.9 }}
+                onClick={() => setEnlargedImage(null)}
+              >
+                ✕
+              </motion.button>
+              {/* 大图 */}
+              <img
+                src={enlargedImage}
+                alt="放大图片"
+                className="max-w-[90vw] max-h-[85vh] rounded-xl object-contain"
+                style={{
+                  boxShadow: "0 20px 60px rgba(0, 0, 0, 0.5)"
+                }}
+              />
+              {/* 提示文字 */}
+              <p className="text-center text-xs mt-3" style={{ color: "var(--text-muted)" }}>
+                按 ESC 或点击背景关闭
+              </p>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }

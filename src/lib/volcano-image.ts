@@ -1,5 +1,6 @@
 import type { ZodiacSign } from "@/types";
 import { getCharacterImage } from "@/constants/images-game";
+import { uploadToR2, generateR2Key } from "./r2";
 
 const VOLCANO_API_URL = "https://ark.cn-beijing.volces.com/api/v3/images/generations";
 const API_KEY = process.env.VOLCANO_API_KEY;
@@ -147,6 +148,10 @@ export async function generateSceneImage(
       cached: false
     };
 
+    const r2Key = generateR2Key(sign, scenePrompt.scene);
+    const permanentUrl = await uploadToR2(result.url, r2Key);
+    result.url = permanentUrl;
+
     imageCache.set(cacheKey, {
       url: result.url,
       timestamp: Date.now()
@@ -213,6 +218,10 @@ export async function generateCharacterImage(
       prompt: prompt,
       cached: false
     };
+
+    const r2Key = generateR2Key(sign, "character");
+    const permanentUrl = await uploadToR2(result.url, r2Key);
+    result.url = permanentUrl;
 
     imageCache.set(cacheKey, {
       url: result.url,

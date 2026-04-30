@@ -31,13 +31,38 @@
   --nebula-1: rgba(244, 180, 196, 0.03);
   --nebula-2: rgba(201, 214, 223, 0.05);
   --nebula-3: rgba(168, 197, 214, 0.04);
+
+  /* 字体变量 */
+  --font-serif-sc: "Noto Serif SC", "Source Han Serif SC", "SimSun", serif;
+  --font-sans-sc: "Noto Sans SC", "PingFang SC", "Microsoft YaHei", sans-serif;
+  --font-display: "ZCOOL XiaoWei", "Noto Serif SC", serif;
+
+  /* 星座主题色 */
+  --zodiac-aries: #e74c3c;
+  --zodiac-taurus: #27ae60;
+  --zodiac-gemini: #f39c12;
+  --zodiac-cancer: #5dade2;
+  --zodiac-leo: #e67e22;
+  --zodiac-virgo: #8e44ad;
+  --zodiac-libra: #ec7063;
+  --zodiac-scorpio: #1a5276;
+  --zodiac-sagittarius: #d35400;
+  --zodiac-capricorn: #5d6d7e;
+  --zodiac-aquarius: #3498db;
+  --zodiac-pisces: #af7ac5;
+
+  /* 关系阶段渐变色 */
+  --stage-stranger: linear-gradient(135deg, #bdc3c7, #95a5a6);
+  --stage-ambiguous: linear-gradient(135deg, #f4b4c4, #e8a4b4);
+  --stage-crush: linear-gradient(135deg, #f39c12, #e74c3c);
+  --stage-lover: linear-gradient(135deg, #e74c3c, #c0392b);
 }
 
 @theme inline {
   --color-background: var(--bg-primary);
   --color-foreground: var(--text-primary);
-  --font-sans: var(--font-dm-sans), "PingFang SC", "Microsoft YaHei", sans-serif;
-  --font-display: var(--font-playfair), "PingFang SC", "Microsoft YaHei", serif;
+  --font-sans: var(--font-sans-sc);
+  --font-display: var(--font-display);
 }
 
 * {
@@ -51,10 +76,55 @@ body {
   min-height: 100vh;
   background: var(--gradient-cosmic);
   color: var(--text-primary);
-  font-family: var(--font-sans);
+  font-family: var(--font-sans-sc);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   overflow-x: hidden;
+}
+
+/* 字体类 */
+.font-serif-sc {
+  font-family: var(--font-serif-sc);
+}
+
+.font-sans-sc {
+  font-family: var(--font-sans-sc);
+}
+
+.font-display {
+  font-family: var(--font-display);
+}
+
+/* 标题样式 */
+.title-gradient {
+  font-family: var(--font-display);
+  background: linear-gradient(135deg, var(--accent-rose), var(--accent-moon), var(--accent-gold));
+  background-size: 200% 200%;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  animation: gradientShift 5s ease infinite;
+}
+
+.title-shine {
+  position: relative;
+  font-family: var(--font-display);
+}
+
+.title-shine::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+  animation: shine 3s ease-in-out infinite;
+}
+
+@keyframes shine {
+  0%, 100% { left: -100%; }
+  50% { left: 100%; }
 }
 
 body {
@@ -563,8 +633,257 @@ img {
   border-bottom-left-radius: 0.25rem;
 }
 
+/* 星座主题色工具类 */
+.zodiac-color-aries { color: var(--zodiac-aries); }
+.zodiac-color-taurus { color: var(--zodiac-taurus); }
+.zodiac-color-gemini { color: var(--zodiac-gemini); }
+.zodiac-color-cancer { color: var(--zodiac-cancer); }
+.zodiac-color-leo { color: var(--zodiac-leo); }
+.zodiac-color-virgo { color: var(--zodiac-virgo); }
+.zodiac-color-libra { color: var(--zodiac-libra); }
+.zodiac-color-scorpio { color: var(--zodiac-scorpio); }
+.zodiac-color-sagittarius { color: var(--zodiac-sagittarius); }
+.zodiac-color-capricorn { color: var(--zodiac-capricorn); }
+.zodiac-color-aquarius { color: var(--zodiac-aquarius); }
+.zodiac-color-pisces { color: var(--zodiac-pisces); }
+
+.zodiac-bg-aries { background: var(--zodiac-aries); }
+.zodiac-bg-taurus { background: var(--zodiac-taurus); }
+.zodiac-bg-gemini { background: var(--zodiac-gemini); }
+.zodiac-bg-cancer { background: var(--zodiac-cancer); }
+.zodiac-bg-leo { background: var(--zodiac-leo); }
+.zodiac-bg-virgo { background: var(--zodiac-virgo); }
+.zodiac-bg-libra { background: var(--zodiac-libra); }
+.zodiac-bg-scorpio { background: var(--zodiac-scorpio); }
+.zodiac-bg-sagittarius { background: var(--zodiac-sagittarius); }
+.zodiac-bg-capricorn { background: var(--zodiac-capricorn); }
+.zodiac-bg-aquarius { background: var(--zodiac-aquarius); }
+.zodiac-bg-pisces { background: var(--zodiac-pisces); }
+
+.zodiac-glow-aries { box-shadow: 0 0 20px rgba(231, 76, 60, 0.4); }
+.zodiac-glow-taurus { box-shadow: 0 0 20px rgba(39, 174, 96, 0.4); }
+.zodiac-glow-gemini { box-shadow: 0 0 20px rgba(243, 156, 18, 0.4); }
+.zodiac-glow-cancer { box-shadow: 0 0 20px rgba(93, 173, 226, 0.4); }
+.zodiac-glow-leo { box-shadow: 0 0 20px rgba(230, 126, 34, 0.4); }
+.zodiac-glow-virgo { box-shadow: 0 0 20px rgba(142, 68, 173, 0.4); }
+.zodiac-glow-libra { box-shadow: 0 0 20px rgba(236, 112, 99, 0.4); }
+.zodiac-glow-scorpio { box-shadow: 0 0 20px rgba(26, 82, 118, 0.4); }
+.zodiac-glow-sagittarius { box-shadow: 0 0 20px rgba(211, 84, 0, 0.4); }
+.zodiac-glow-capricorn { box-shadow: 0 0 20px rgba(93, 109, 126, 0.4); }
+.zodiac-glow-aquarius { box-shadow: 0 0 20px rgba(52, 152, 219, 0.4); }
+.zodiac-glow-pisces { box-shadow: 0 0 20px rgba(175, 122, 197, 0.4); }
+
+/* 关系阶段样式 */
+.stage-stranger { background: var(--stage-stranger); }
+.stage-ambiguous { background: var(--stage-ambiguous); }
+.stage-crush { background: var(--stage-crush); }
+.stage-lover { background: var(--stage-lover); }
+
+/* 增强卡片效果 */
+.glass-card-enhanced {
+  background: var(--bg-card);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid var(--border-light);
+  border-radius: 1.5rem;
+  position: relative;
+  overflow: hidden;
+}
+
+.glass-card-enhanced::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--accent-moon), transparent);
+  opacity: 0.5;
+}
+
+.glass-card-enhanced::after {
+  content: "✦";
+  position: absolute;
+  top: 0.5rem;
+  right: 0.5rem;
+  color: var(--accent-moon);
+  font-size: 0.75rem;
+  opacity: 0.3;
+}
+
+/* 粒子效果 */
+.particle-effect {
+  position: relative;
+}
+
+.particle-effect::before {
+  content: "";
+  position: absolute;
+  width: 4px;
+  height: 4px;
+  background: var(--accent-rose);
+  border-radius: 50%;
+  animation: particleFloat 3s ease-in-out infinite;
+}
+
+@keyframes particleFloat {
+  0%, 100% {
+    transform: translate(0, 0) scale(1);
+    opacity: 0.6;
+  }
+  50% {
+    transform: translate(20px, -20px) scale(1.5);
+    opacity: 1;
+  }
+}
+
+/* 打字机效果 */
+.typing-effect {
+  overflow: hidden;
+  white-space: nowrap;
+  animation: typing 2s steps(20, end);
+}
+
+@keyframes typing {
+  from { width: 0; }
+  to { width: 100%; }
+}
+
+/* 脉冲光环 */
+.pulse-ring {
+  position: relative;
+}
+
+.pulse-ring::before {
+  content: "";
+  position: absolute;
+  inset: -4px;
+  border-radius: inherit;
+  border: 2px solid var(--accent-rose);
+  animation: pulseRing 2s ease-out infinite;
+  opacity: 0;
+}
+
+@keyframes pulseRing {
+  0% {
+    transform: scale(1);
+    opacity: 0.6;
+  }
+  100% {
+    transform: scale(1.1);
+    opacity: 0;
+  }
+}
+
+/* 3D翻转效果 */
+.flip-card {
+  perspective: 1000px;
+}
+
+.flip-card-inner {
+  transition: transform 0.6s;
+  transform-style: preserve-3d;
+}
+
+.flip-card:hover .flip-card-inner {
+  transform: rotateY(180deg);
+}
+
+/* 震动效果 */
+.shake {
+  animation: shake 0.5s ease-in-out;
+}
+
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  25% { transform: translateX(-5px); }
+  75% { transform: translateX(5px); }
+}
+
+/* 弹跳效果 */
+.bounce-in {
+  animation: bounceIn 0.6s ease-out;
+}
+
+@keyframes bounceIn {
+  0% {
+    transform: scale(0.3);
+    opacity: 0;
+  }
+  50% {
+    transform: scale(1.05);
+  }
+  70% {
+    transform: scale(0.9);
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+/* 星座符号水印 */
+.zodiac-watermark {
+  position: relative;
+  overflow: hidden;
+}
+
+.zodiac-watermark::before {
+  content: attr(data-zodiac);
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-size: 8rem;
+  opacity: 0.03;
+  pointer-events: none;
+  font-family: var(--font-display);
+}
+
+/* 加载动画 */
+.loading-zodiac {
+  position: relative;
+  width: 40px;
+  height: 40px;
+}
+
+.loading-zodiac::before {
+  content: "✦";
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-size: 1.5rem;
+  color: var(--accent-rose);
+  animation: rotateZodiac 1.5s linear infinite;
+}
+
+@keyframes rotateZodiac {
+  0% { transform: translate(-50%, -50%) rotate(0deg); }
+  100% { transform: translate(-50%, -50%) rotate(360deg); }
+}
+
+/* 空状态插画 */
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 3rem;
+  text-align: center;
+}
+
+.empty-state-icon {
+  font-size: 4rem;
+  margin-bottom: 1rem;
+  opacity: 0.5;
+  animation: float 3s ease-in-out infinite;
+}
+
+/* 响应式优化 */
 @media (max-width: 768px) {
-  .glass-card {
+  .glass-card,
+  .glass-card-enhanced {
     border-radius: 1rem;
   }
 
@@ -577,5 +896,9 @@ img {
   .btn-secondary {
     padding: 0.75rem 1.5rem;
     border-radius: 1.5rem;
+  }
+
+  .font-display {
+    font-size: 0.9em;
   }
 }
